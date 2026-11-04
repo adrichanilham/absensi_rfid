@@ -2,31 +2,53 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Notifications\Notifiable;
+use App\Models\Siswa;
+use App\Models\Kelas;
+use App\Models\PengajuanIzin;
 
-#[Fillable(['name', 'email', 'password'])]
-#[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
+    protected $fillable = [
+        'username',
+        'password',
+        'role',
+    ];
+
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    // Relasi akun wali murid dengan anak.
+    public function anak()
+    {
+        return $this->hasOne(Siswa::class, 'wali_murid_id');
+    }
+
+    // Relasi guru dengan kelas yang diampu.
+    public function kelasDiampu()
+    {
+        return $this->hasMany(Kelas::class, 'wali_kelas_id');
+    }
+
+    // Relasi operator dengan pengajuan izin yang diverifikasi.
+    public function pengajuanIzinDiverifikasi()
+    {
+        return $this->hasMany(
+            PengajuanIzin::class,
+            'diverifikasi_oleh'
+        );
     }
 }

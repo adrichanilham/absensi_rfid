@@ -1,0 +1,139 @@
+
+name: Laravel 13 CI/CD - InfinityFree
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: infinityfree-production
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP 8.3
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: mbstring, pdo_mysql, dom, curl, fileinfo, openssl
+          coverage: none
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install Composer dependencies for testing
+        run: composer install --prefer-dist --no-interaction
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Run Laravel tests
+        run: php artisan test
+
+      - name: Build frontend assets
+        run: npm run build
+
+      - name: Install production dependencies
+        run: |
+          composer install \
+            --no-dev \
+            --prefer-dist \
+            --no-interaction \
+            --no-progress \
+            --no-scripts
+          composer dump-autoload --no-dev --optimize=false
+
+      - name: Prepare private application package
+        run: |
+          mkdir -p deploy/app deploy/public
+
+          rsync -a ./ deploy/app/ \
+            --exclude='.git/' \
+            --exclude='.github/' \
+            --exclude='.env' \
+            --exclude='.env.*' \
+            --exclude='!.env.example' \
+            --exclude='node_modules/' \
+            --exclude='tests/' \
+            --exclude='public/' \
+            --exclude='deploy/' \
+            --exclude='storage/logs/*' \
+            --exclude='storage/framework/cache/data/*' \
+            --exclude='storage/framework/sessions/*' \
+            --exclude='storage/framework/views/*'
+
+          # Hapus cache lokal agar tidak membawa path lokal.
+          find deploy/app/bootstrap/cache -type f \
+            ! -name '.gitignore' -delete
+
+          mkdir -p deploy/app/storage/framework/cache/data
+          mkdir -p deploy/app/storage/framework/sessions
+          mkdir -p deploy/app/storage/framework/views
+          mkdir -p deploy/app/storage/logs
+
+          # Folder publik: isi public/, bukan folder public itu sendiri.
+          rsync -a public/ deploy/public/
+
+          # Arahkan entry point ke aplikasi privat.
+          python3 - <<'PY'
+          from pathlib import Path
+
+          p = Path("deploy/public/index.php")
+          s = p.read_text()
+
+          s = s.replace(
+              "__DIR__.'/../storage/",
+              "__DIR__.'/../laravel_app/storage/"
+          )
+          s = s.replace(
+              "__DIR__.'/../vendor/",
+              "__DIR__.'/../laravel_app/vendor/"
+          )
+          s = s.replace(
+              "__DIR__.'/../bootstrap/",
+              "__DIR__.'/../laravel_app/bootstrap/"
+          )
+
+          p.write_text(s)
+          PY
+
+          # Pastikan berkas sensitif tidak ikut ke paket publik.
+          test ! -e deploy/public/.env
+          test ! -e deploy/public/composer.json
+
+      - name: Deploy private Laravel application
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftp
+          port: 21
+          local-dir: ./deploy/app/
+          server-dir: /laravel_app/
+          dangerous-clean-slate: false
+
+      - name: Deploy public web files
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftp
+          port: 21
+          local-dir: ./deploy/public/
+          server-dir: /htdocs/
+          dangerous-clean-slate: false
