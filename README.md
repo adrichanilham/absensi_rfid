@@ -29,6 +29,54 @@ In addition, [Laracasts](https://laracasts.com) contains thousands of video tuto
 
 You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
 
+## Deploy ke InfinityFree
+
+Workflow GitHub Actions di `.github/workflows/deploy.yml` menjalankan test, membangun asset, lalu mengirim aplikasi melalui FTP setiap ada push ke branch `main`. Deploy manual juga dapat dijalankan dari tab **Actions** dengan workflow **Laravel 13 CI/CD - InfinityFree**.
+
+### Persiapan hosting
+
+1. Pastikan paket InfinityFree menyediakan PHP 8.3 atau lebih baru dan ekstensi `pdo_mysql`, `mbstring`, `fileinfo`, `openssl`, `tokenizer`, `xml`, dan `ctype`.
+2. Buat database MySQL dari panel InfinityFree dan catat hostname, nama database, username, dan password pada bagian **MySQL Databases**.
+3. Di root FTP akun, siapkan dua direktori sejajar: `htdocs` dan `laravel_app`. Workflow mengirim berkas web ke `htdocs/` dan kode Laravel (termasuk `vendor/`) ke `laravel_app/`. Jangan letakkan `.env` di `htdocs`.
+4. Di GitHub, buka **Settings → Secrets and variables → Actions → New repository secret**, lalu tambahkan:
+
+   | Secret | Nilai |
+   | --- | --- |
+   | `FTP_SERVER` | Host FTP yang ditampilkan InfinityFree (tanpa `ftp://`) |
+   | `FTP_USERNAME` | Username FTP |
+   | `FTP_PASSWORD` | Password FTP |
+
+5. Upload berkas `.env` ke `laravel_app/.env` melalui FTP atau File Manager. Isi konfigurasi minimum berikut memakai detail database dari panel:
+
+   ```dotenv
+   APP_NAME="Absensi RFID"
+   APP_ENV=production
+   APP_KEY=base64:GANTI_DENGAN_KEY_YANG_DIBUAT_SECARA_LOKAL
+   APP_DEBUG=false
+   APP_URL=https://domain-anda
+
+   DB_CONNECTION=mysql
+   DB_HOST=hostname-dari-panel
+   DB_PORT=3306
+   DB_DATABASE=nama-database-dari-panel
+   DB_USERNAME=username-dari-panel
+   DB_PASSWORD=password-dari-panel
+
+   SESSION_DRIVER=file
+   CACHE_STORE=file
+   QUEUE_CONNECTION=sync
+   LOG_CHANNEL=single
+   LOG_LEVEL=error
+   ```
+
+   Buat key sekali di komputer lokal dengan `php artisan key:generate --show`, lalu salin hasilnya sebagai nilai `APP_KEY`. Simpan `.env` hanya di hosting; jangan commit atau masukkan isinya ke log GitHub Actions. Pastikan direktori `storage/` dan `bootstrap/cache/` dapat ditulis oleh PHP.
+
+### Database dan deploy berikutnya
+
+InfinityFree dengan FTP saja tidak menyediakan akses Artisan/SSH ke server, sehingga workflow **tidak menjalankan migrasi database secara otomatis**. Siapkan skema tabel aplikasi melalui phpMyAdmin sebelum aplikasi dipakai, dan terapkan migrasi baru dengan metode yang didukung hosting. Jangan gunakan file `database/database.sqlite` lokal sebagai database produksi; workflow mengecualikannya dari upload.
+
+Setelah secret, folder, `.env`, dan database siap, push perubahan ke `main` atau jalankan workflow manual dari GitHub Actions. Periksa log workflow sampai kedua langkah deploy FTP berhasil. `.env` dan `APP_KEY` yang dibuat di server tetap tersimpan saat deploy.
+
 ## Agentic Development
 
 Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
