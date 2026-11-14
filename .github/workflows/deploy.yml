@@ -127,14 +127,14 @@ jobs:
       - name: Deploy private Laravel application
         uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftp
-          port: 21
-          local-dir: ./deploy/app/
-          server-dir: /laravel_app/
-          dangerous-clean-slate: false
+            server: ${{ secrets.FTP_SERVER }}
+            username: ${{ secrets.FTP_USERNAME }}
+            password: ${{ secrets.FTP_PASSWORD }}
+            protocol: ftp
+            port: 21
+            local-dir: ./deploy/app/
+            server-dir: /laravel_app/
+            dangerous-clean-slate: false
 
       - name: Deploy public web files
         uses: SamKirkland/FTP-Deploy-Action@v4.3.6
