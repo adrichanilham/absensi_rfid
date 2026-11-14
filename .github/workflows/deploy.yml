@@ -48,7 +48,9 @@ jobs:
           SESSION_DRIVER: array
           DB_CONNECTION: sqlite
           DB_DATABASE: ":memory:"
-        run: php artisan test
+        run: |
+          rm -f bootstrap/cache/config.php
+          php artisan test
 
       - name: Build frontend assets
         run: npm run build
