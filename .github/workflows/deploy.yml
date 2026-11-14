@@ -41,6 +41,13 @@ jobs:
         run: npm ci
 
       - name: Run Laravel tests
+        env:
+          APP_ENV: testing
+          APP_KEY: base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+          CACHE_STORE: array
+          SESSION_DRIVER: array
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ":memory:"
         run: php artisan test
 
       - name: Build frontend assets
@@ -76,7 +83,6 @@ jobs:
             --exclude='storage/framework/sessions/*' \
             --exclude='storage/framework/views/*'
 
-          # Hapus cache lokal agar tidak membawa path lokal.
           find deploy/app/bootstrap/cache -type f \
             ! -name '.gitignore' -delete
 
@@ -85,10 +91,8 @@ jobs:
           mkdir -p deploy/app/storage/framework/views
           mkdir -p deploy/app/storage/logs
 
-          # Folder publik: isi public/, bukan folder public itu sendiri.
           rsync -a public/ deploy/public/
 
-          # Arahkan entry point ke aplikasi privat.
           python3 - <<'PY'
           from pathlib import Path
 
@@ -111,7 +115,6 @@ jobs:
           p.write_text(s)
           PY
 
-          # Pastikan berkas sensitif tidak ikut ke paket publik.
           test ! -e deploy/public/.env
           test ! -e deploy/public/composer.json
 
