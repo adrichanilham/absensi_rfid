@@ -51,9 +51,6 @@ jobs:
           export DB_CONNECTION=sqlite
           export DB_DATABASE=:memory:
 
-          echo "Checking APP_KEY..."
-          test -n "$APP_KEY" && echo "APP_KEY is configured"
-
           php artisan test
 
       - name: Build frontend assets
@@ -67,12 +64,14 @@ jobs:
             --no-interaction \
             --no-progress \
             --no-scripts
+
           composer dump-autoload --no-dev
 
-      - name: Prepare private application package
+      - name: Prepare deployment package
         run: |
           mkdir -p deploy/app deploy/public
 
+          # Salin aplikasi Laravel tanpa file public dan .env
           rsync -a ./ deploy/app/ \
             --exclude='.git/' \
             --exclude='.github/' \
@@ -97,8 +96,14 @@ jobs:
           mkdir -p deploy/app/storage/framework/views
           mkdir -p deploy/app/storage/logs
 
+          # Salin file publik Laravel ke root htdocs
           rsync -a public/ deploy/public/
 
+          # Letakkan aplikasi Laravel di dalam htdocs/laravel_app
+          mkdir -p deploy/public/laravel_app
+          rsync -a deploy/app/ deploy/public/laravel_app/
+
+          # Ubah path pada public/index.php
           python3 - <<'PY'
           from pathlib import Path
 
@@ -107,36 +112,37 @@ jobs:
 
           s = s.replace(
               "__DIR__.'/../storage/",
-              "__DIR__.'/../laravel_app/storage/"
+              "__DIR__.'/laravel_app/storage/"
           )
           s = s.replace(
               "__DIR__.'/../vendor/",
-              "__DIR__.'/../laravel_app/vendor/"
+              "__DIR__.'/laravel_app/vendor/"
           )
           s = s.replace(
               "__DIR__.'/../bootstrap/",
-              "__DIR__.'/../laravel_app/bootstrap/"
+              "__DIR__.'/laravel_app/bootstrap/"
           )
 
           p.write_text(s)
           PY
 
+          # Lindungi seluruh file aplikasi Laravel dari akses web langsung
+          cat > deploy/public/laravel_app/.htaccess <<'HTACCESS'
+          <IfModule mod_authz_core.c>
+              Require all denied
+          </IfModule>
+          <IfModule !mod_authz_core.c>
+              Order allow,deny
+              Deny from all
+          </IfModule>
+          HTACCESS
+
+          # Pastikan .env tidak ikut terunggah
           test ! -e deploy/public/.env
-          test ! -e deploy/public/composer.json
+          test ! -e deploy/public/laravel_app/.env
+          test ! -e deploy/public/laravel_app/composer.json || true
 
-      - name: Deploy private Laravel application
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
-        with:
-            server: ${{ secrets.FTP_SERVER }}
-            username: ${{ secrets.FTP_USERNAME }}
-            password: ${{ secrets.FTP_PASSWORD }}
-            protocol: ftp
-            port: 21
-            local-dir: ./deploy/app/
-            server-dir: /laravel_app/
-            dangerous-clean-slate: false
-
-      - name: Deploy public web files
+      - name: Deploy to InfinityFree
         uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
           server: ${{ secrets.FTP_SERVER }}
