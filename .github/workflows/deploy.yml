@@ -41,15 +41,19 @@ jobs:
         run: npm ci
 
       - name: Run Laravel tests
-        env:
-          APP_ENV: testing
-          APP_KEY: base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
-          CACHE_STORE: array
-          SESSION_DRIVER: array
-          DB_CONNECTION: sqlite
-          DB_DATABASE: ":memory:"
         run: |
           rm -f bootstrap/cache/config.php
+
+          export APP_ENV=testing
+          export APP_KEY='base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA='
+          export CACHE_STORE=array
+          export SESSION_DRIVER=array
+          export DB_CONNECTION=sqlite
+          export DB_DATABASE=:memory:
+
+          echo "Checking APP_KEY..."
+          test -n "$APP_KEY" && echo "APP_KEY is configured"
+
           php artisan test
 
       - name: Build frontend assets
