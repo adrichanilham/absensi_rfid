@@ -1,199 +1,308 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Kartu RFID</title>
+@extends('layouts.app')
 
-    <style>
-        * { box-sizing: border-box; }
+@section('title', 'Daftarkan Kartu RFID')
 
-        body {
-            margin: 0;
-            padding: 24px;
-            font-family: Arial, sans-serif;
-            background: #f3f6fb;
-            color: #1f2937;
+@section('content')
+<style>
+    .rfid-wrapper {
+        max-width: 780px;
+        margin: 0 auto;
+    }
+
+    .rfid-back-link {
+        display: inline-block;
+        margin-bottom: 12px;
+        color: #850000;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .rfid-back-link:hover {
+        text-decoration: underline;
+    }
+
+    .rfid-page-title {
+        margin: 0 0 4px;
+        color: #850000;
+        font-family: Georgia, serif;
+        font-size: 24px;
+        font-weight: 700;
+    }
+
+    .rfid-page-subtitle {
+        margin: 0 0 22px;
+        color: #6b7280;
+        font-size: 13px;
+        line-height: 1.5;
+    }
+
+    .rfid-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    .rfid-card-banner {
+        background: #850000;
+        padding: 16px 24px;
+        color: #ffffff;
+    }
+
+    .rfid-card-banner h2 {
+        margin: 0 0 3px;
+        font-family: Georgia, serif;
+        font-size: 16px;
+        font-weight: 700;
+        color: #ffffff;
+    }
+
+    .rfid-card-banner p {
+        margin: 0;
+        font-size: 12px;
+        color: #f3d1d1;
+    }
+
+    .rfid-card-body {
+        padding: 24px;
+    }
+
+    .rfid-form-group {
+        margin-bottom: 20px;
+    }
+
+    .rfid-label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 13px;
+        font-weight: 700;
+        color: #1f2937;
+    }
+
+    .rfid-input,
+    .rfid-select {
+        width: 100%;
+        padding: 10px 14px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        font-size: 14px;
+        font-family: inherit;
+        color: #111827;
+        background-color: #ffffff;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .rfid-input:focus,
+    .rfid-select:focus {
+        outline: none;
+        border-color: #850000;
+        box-shadow: 0 0 0 3px rgba(133, 0, 0, 0.12);
+    }
+
+    .rfid-help {
+        margin: 6px 0 0;
+        font-size: 12px;
+        color: #6b7280;
+        line-height: 1.5;
+    }
+
+    .rfid-error {
+        margin-top: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #b91c1c;
+    }
+
+    .rfid-alert {
+        padding: 13px 16px;
+        border-radius: 6px;
+        background: #fef2f2;
+        border: 1px solid #fca5a5;
+        color: #991b1b;
+        font-size: 13px;
+        line-height: 1.5;
+        margin-bottom: 20px;
+    }
+
+    .rfid-actions {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 10px;
+        margin-top: 24px;
+        padding-top: 16px;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .rfid-btn-cancel {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 9px 18px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        background: #ffffff;
+        color: #374151;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background 0.15s;
+    }
+
+    .rfid-btn-cancel:hover {
+        background: #f9fafb;
+    }
+
+    .rfid-btn-submit {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 9px 18px;
+        border: 1px solid #850000;
+        border-radius: 6px;
+        background: #850000;
+        color: #ffffff;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background 0.15s;
+    }
+
+    .rfid-btn-submit:hover {
+        background: #690000;
+    }
+
+    @media (max-width: 540px) {
+        .rfid-actions {
+            flex-direction: column-reverse;
         }
 
-        .container {
-            max-width: 650px;
-            margin: 30px auto;
-        }
-
-        .card {
-            background: white;
-            padding: 28px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px #0000000a;
-        }
-
-        h1 { margin-top: 0; }
-
-        .subtitle {
-            color: #64748b;
-            line-height: 1.6;
-        }
-
-        .form-group { margin: 20px 0; }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            font-size: 14px;
-        }
-
-        input, select {
+        .rfid-btn-cancel,
+        .rfid-btn-submit {
             width: 100%;
-            padding: 12px;
-            border: 1px solid #cbd5e1;
-            border-radius: 7px;
-            background: white;
-            font-size: 15px;
         }
+    }
+</style>
 
-        .help {
-            color: #64748b;
-            font-size: 13px;
-            line-height: 1.5;
-        }
+<div class="rfid-wrapper">
+    <a href="{{ route('rfid.index') }}" class="rfid-back-link">
+        &larr; Kembali ke data RFID
+    </a>
 
-        .error {
-            color: #b91c1c;
-            font-size: 13px;
-            margin-top: 6px;
-        }
+    <h1 class="rfid-page-title">Daftarkan Kartu RFID</h1>
+    <p class="rfid-page-subtitle">
+        Tambahkan UID kartu RFID dan hubungkan dengan data siswa.
+    </p>
 
-        .alert {
-            padding: 12px;
-            background: #fee2e2;
-            color: #991b1b;
-            border-radius: 7px;
-            margin: 16px 0;
-        }
+    <div class="rfid-card">
+        <div class="rfid-card-banner">
+            <h2>Informasi Kartu RFID</h2>
+            <p>Lengkapi informasi kartu RFID pada formulir berikut</p>
+        </div>
 
-        .actions {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-top: 25px;
-        }
-
-        .button {
-            display: inline-block;
-            padding: 11px 16px;
-            border: 0;
-            border-radius: 7px;
-            background: #2563eb;
-            color: white;
-            text-decoration: none;
-            font-size: 14px;
-            cursor: pointer;
-        }
-
-        .button-secondary { background: #64748b; }
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <div class="card">
-        <h1>Edit Kartu RFID</h1>
-
-        <p class="subtitle">
-            Perbarui UID, pemilik kartu, atau status kartu RFID.
-        </p>
-
-        @if ($errors->any())
-            <div class="alert">
-                @foreach ($errors->all() as $error)
-                    <div>{{ $error }}</div>
-                @endforeach
-            </div>
-        @endif
-
-        <form action="{{ route('rfid.update', $rfid) }}" method="POST">
-            @csrf
-            @method('PUT')
-
-            <div class="form-group">
-                <label for="uid">UID Kartu RFID</label>
-
-                <input
-                    type="text"
-                    id="uid"
-                    name="uid"
-                    maxlength="100"
-                    value="{{ old('uid', $rfid->uid) }}"
-                    required
-                >
-
-                @error('uid')
-                    <div class="error">{{ $message }}</div>
-                @enderror
-            </div>
-
-            <div class="form-group">
-                <label for="siswa_id">Pemilik Kartu</label>
-
-                <select id="siswa_id" name="siswa_id" required>
-                    <option value="">-- Pilih siswa --</option>
-
-                    @foreach ($siswa as $item)
-                        <option
-                            value="{{ $item->id }}"
-                            @selected(old('siswa_id', $rfid->siswa_id) == $item->id)
-                        >
-                            {{ $item->nama_lengkap }}
-                            — NISN: {{ $item->nisn }}
-                            — {{ $item->kelas?->nama_kelas ?? 'Belum ada kelas' }}
-                        </option>
+        <div class="rfid-card-body">
+            @if ($errors->any())
+                <div class="rfid-alert">
+                    <strong>Periksa kembali data berikut:</strong>
+                    @foreach ($errors->all() as $error)
+                        <div style="margin-top: 4px;">• {{ $error }}</div>
                     @endforeach
-                </select>
+                </div>
+            @endif
 
-                <p class="help">
-                    Pilih siswa aktif yang belum memiliki kartu lain.
-                </p>
+            @if ($siswa->isEmpty())
+                <div class="rfid-alert">
+                    Tidak ada siswa aktif yang belum memiliki kartu RFID.
+                    Tambahkan siswa terlebih dahulu atau periksa kartu yang sudah terdaftar.
+                </div>
 
-                @error('siswa_id')
-                    <div class="error">{{ $message }}</div>
-                @enderror
-            </div>
+                <div class="rfid-actions">
+                    <a href="{{ route('rfid.index') }}" class="rfid-btn-cancel">
+                        Kembali ke Data RFID
+                    </a>
+                    <a href="{{ route('siswa.create') }}" class="rfid-btn-submit">
+                        Tambah Siswa
+                    </a>
+                </div>
+            @else
+                <form action="{{ route('rfid.store') }}" method="POST">
+                    @csrf
 
-            <div class="form-group">
-                <label for="aktif">Status Kartu</label>
+                    <div class="rfid-form-group">
+                        <label for="uid" class="rfid-label">UID Kartu RFID</label>
+                        <input
+                            type="text"
+                            id="uid"
+                            name="uid"
+                            class="rfid-input"
+                            value="{{ old('uid') }}"
+                            placeholder="Contoh: 04A1B2C3D4"
+                            maxlength="100"
+                            autocomplete="off"
+                            required
+                            autofocus
+                        >
+                        <p class="rfid-help">
+                            Tempelkan kartu pada reader jika reader dapat mengetik UID ke kolom ini, atau masukkan UID kartu secara manual.
+                        </p>
+                        @error('uid')
+                            <div class="rfid-error">{{ $message }}</div>
+                        @enderror
+                    </div>
 
-                <select id="aktif" name="aktif" required>
-                    <option value="1"
-                        @selected((string) old('aktif', (int) $rfid->aktif) === '1')>
-                        Aktif
-                    </option>
+                    <div class="rfid-form-group">
+                        <label for="siswa_id" class="rfid-label">Pilih Siswa</label>
+                        <select id="siswa_id" name="siswa_id" class="rfid-select" required>
+                            <option value="">-- Pilih siswa --</option>
+                            @foreach ($siswa as $item)
+                                <option
+                                    value="{{ $item->id }}"
+                                    @selected(old('siswa_id') == $item->id)
+                                >
+                                    {{ $item->nama_lengkap }}
+                                    — NISN: {{ $item->nisn }}
+                                    — {{ $item->kelas?->nama_kelas ?? 'Belum ada kelas' }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <p class="rfid-help">
+                            Hanya siswa aktif yang belum memiliki kartu RFID yang ditampilkan.
+                        </p>
+                        @error('siswa_id')
+                            <div class="rfid-error">{{ $message }}</div>
+                        @enderror
+                    </div>
 
-                    <option value="0"
-                        @selected((string) old('aktif', (int) $rfid->aktif) === '0')>
-                        Nonaktif
-                    </option>
-                </select>
-
-                @error('aktif')
-                    <div class="error">{{ $message }}</div>
-                @enderror
-            </div>
-
-            <div class="actions">
-                <button type="submit" class="button">
-                    Simpan Perubahan
-                </button>
-
-                <a href="{{ route('rfid.index') }}"
-                   class="button button-secondary">
-                    Batal
-                </a>
-            </div>
-        </form>
+                    <div class="rfid-actions">
+                        <a href="{{ route('rfid.index') }}" class="rfid-btn-cancel">
+                            Batal
+                        </a>
+                        <button type="submit" class="rfid-btn-submit">
+                            Simpan Kartu RFID
+                        </button>
+                    </div>
+                </form>
+            @endif
+        </div>
     </div>
 </div>
 
-</body>
-</html>
+<script>
+    // Pindahkan fokus ke dropdown siswa saat reader USB otomatis menekan Enter setelah membaca UID
+    const uidField = document.getElementById('uid');
+    const siswaSelect = document.getElementById('siswa_id');
+
+    if (uidField && siswaSelect) {
+        uidField.addEventListener('keydown', function (event) {
+            if (event.key === 'Enter' && uidField.value.trim() !== '' && !siswaSelect.value) {
+                event.preventDefault();
+                siswaSelect.focus();
+            }
+        });
+    }
+</script>
+@endsection
