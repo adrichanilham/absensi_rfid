@@ -1,4 +1,3 @@
-
 @extends('layouts.app')
 
 @section('title', 'Data RFID - Absensi RFID')
@@ -7,75 +6,96 @@
 
 @section('content')
 
+@php
+    $tanggalIndonesia = now()->locale('id')->translatedFormat('l, d F Y');
+@endphp
+
 <style>
     .rfid-page {
         width: 100%;
-        font-family: Arial, sans-serif;
-        color: #292929;
+        font-family: 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
+        color: #1f2937;
     }
-
-    /* HEADER HALAMAN */
     .rfid-heading {
         display: flex;
         justify-content: space-between;
         align-items: center;
         flex-wrap: wrap;
-        gap: 15px;
+        gap: 16px;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 18px 22px;
         margin-bottom: 20px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
     }
 
     .rfid-heading h2 {
-        margin: 0 0 5px;
+        margin: 0 0 4px;
         color: #850000;
-        font-family: Georgia, serif;
-        font-size: 20px;
+        font-family: inherit;
+        font-size: 19px;
+        font-weight: 700;
+        letter-spacing: -0.015em;
     }
 
     .rfid-heading p {
         margin: 0;
-        color: #777;
-        font-family: Georgia, serif;
-        font-size: 12px;
-        font-style: italic;
+        color: #6b7280;
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 500;
     }
 
     .rfid-date {
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        padding: 9px 13px;
-        background: #850000;
-        color: white;
-        border-radius: 7px;
-        font-family: Georgia, serif;
-        font-size: 12px;
-        font-weight: bold;
+        padding: 9px 15px;
+        background: #fdf2f2;
+        border: 1px solid #f5c6cb;
+        color: #850000;
+        border-radius: 8px;
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .rfid-date svg {
+        width: 17px;
+        height: 17px;
+        flex-shrink: 0;
     }
 
     /* NOTIFIKASI */
     .rfid-alert {
-        padding: 11px 14px;
-        margin-bottom: 15px;
-        border-radius: 7px;
+        padding: 12px 15px;
+        margin-bottom: 16px;
+        border-radius: 8px;
         font-size: 13px;
+        font-weight: 500;
     }
 
     .rfid-alert.success {
-        background: #dcfce7;
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
         color: #166534;
     }
 
     .rfid-alert.error {
-        background: #fee2e2;
+        background: #fef2f2;
+        border: 1px solid #fecaca;
         color: #991b1b;
     }
 
     /* PANEL TABEL */
     .rfid-table-panel {
-        background: white;
-        border: 1px solid #e5dddd;
-        border-radius: 8px;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
         overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
     }
 
     .rfid-table-header {
@@ -84,71 +104,78 @@
         align-items: center;
         flex-wrap: wrap;
         gap: 12px;
-        padding: 13px 15px;
+        padding: 15px 20px;
         background: #850000;
-        color: white;
+        color: #ffffff;
     }
 
     .rfid-table-header h3 {
-        margin: 0 0 4px;
-        font-family: Georgia, serif;
-        font-size: 16px;
+        margin: 0 0 3px;
+        font-family: inherit;
+        font-size: 15.5px;
+        font-weight: 700;
+        color: #ffffff;
     }
 
     .rfid-table-header p {
         margin: 0;
-        color: #f1dada;
-        font-size: 10px;
+        color: #f3d1d1;
+        font-size: 12px;
     }
-
-    /* TOMBOL */
     .rfid-btn {
         display: inline-flex;
         align-items: center;
         justify-content: center;
         gap: 6px;
-        padding: 8px 12px;
+        padding: 8px 14px;
         border: 1px solid transparent;
-        border-radius: 6px;
+        border-radius: 8px;
         text-decoration: none;
-        font-family: Arial, sans-serif;
-        font-size: 11px;
-        font-weight: bold;
+        font-family: inherit;
+        font-size: 12.5px;
+        font-weight: 600;
         cursor: pointer;
         white-space: nowrap;
-        transition: .2s;
+        transition: all 0.18s ease;
     }
 
     .rfid-btn-add {
-        background: white;
+        background: #ffffff;
         color: #850000;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     }
 
     .rfid-btn-add:hover {
-        background: #fff0f0;
+        background: #fdf2f2;
     }
 
     .rfid-btn-edit {
-        background: white;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        background: #ffffff;
         color: #850000;
         border-color: #e6caca;
     }
 
     .rfid-btn-edit:hover {
         background: #850000;
-        color: white;
+        color: #ffffff;
         border-color: #850000;
     }
 
     .rfid-btn-delete {
-        background: white;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        background: #ffffff;
         color: #b91c1c;
-        border-color: #f1caca;
+        border-color: #fecaca;
     }
 
     .rfid-btn-delete:hover {
         background: #b91c1c;
-        color: white;
+        color: #ffffff;
         border-color: #b91c1c;
     }
 
@@ -162,30 +189,30 @@
         width: 100%;
         min-width: 800px;
         border-collapse: collapse;
-        font-family: Arial, sans-serif;
+        font-family: inherit;
     }
 
     .rfid-table thead th {
-        padding: 11px 10px;
-        background: #f3eeee;
-        color: #700000;
-        font-size: 11px;
-        font-weight: bold;
+        padding: 12px 14px;
+        background: #f9fafb;
+        color: #374151;
+        font-size: 12px;
+        font-weight: 700;
         text-align: left;
         white-space: nowrap;
-        border-bottom: 1px solid #e6dede;
+        border-bottom: 1px solid #e5e7eb;
     }
 
     .rfid-table tbody td {
-        padding: 11px 10px;
-        border-bottom: 1px solid #eee;
-        color: #444;
-        font-size: 11px;
+        padding: 12px 14px;
+        border-bottom: 1px solid #f3f4f6;
+        color: #374151;
+        font-size: 13px;
         vertical-align: middle;
     }
 
     .rfid-table tbody tr:hover {
-        background: #fff8f8;
+        background: #fdf8f8;
     }
 
     .rfid-table tbody tr:last-child td {
@@ -193,33 +220,32 @@
     }
 
     .rfid-uid {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 6px;
+        background: #fdf2f2;
+        border: 1px solid #f5c6cb;
         color: #850000;
-        font-weight: bold;
-        font-family: monospace;
-        font-size: 12px;
+        font-weight: 700;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: 12.5px;
+        letter-spacing: 0.03em;
     }
 
     .rfid-student-name {
-        color: #292929;
-        font-weight: bold;
-    }
-
-    .rfid-student-nisn {
-        display: block;
-        margin-top: 3px;
-        color: #999;
-        font-size: 9px;
+        color: #111827;
+        font-weight: 600;
     }
 
     /* BADGE STATUS */
     .rfid-status {
         display: inline-block;
-        min-width: 60px;
-        padding: 5px 9px;
-        border-radius: 20px;
+        min-width: 64px;
+        padding: 4px 10px;
+        border-radius: 6px;
         text-align: center;
-        font-size: 10px;
-        font-weight: bold;
+        font-size: 11.5px;
+        font-weight: 700;
     }
 
     .rfid-status.active {
@@ -244,12 +270,11 @@
         margin: 0;
     }
 
-    /* DATA KOSONG */
     .rfid-empty {
-        padding: 35px 15px !important;
+        padding: 32px 16px !important;
         text-align: center;
-        color: #999 !important;
-        font-size: 12px !important;
+        color: #6b7280 !important;
+        font-size: 13px !important;
     }
 
     /* PAGINATION */
@@ -259,10 +284,11 @@
         align-items: center;
         flex-wrap: wrap;
         gap: 10px;
-        padding: 12px 15px;
-        border-top: 1px solid #eee;
-        font-size: 11px;
-        color: #777;
+        padding: 13px 18px;
+        border-top: 1px solid #e5e7eb;
+        background: #fafafa;
+        font-size: 12px;
+        color: #6b7280;
     }
 
     .rfid-pagination nav {
@@ -286,35 +312,45 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        min-width: 28px;
-        height: 28px;
-        padding: 0 8px;
-        border: 1px solid #e5dddd;
-        border-radius: 5px;
-        color: #850000;
-        background: white;
+        min-width: 30px;
+        height: 30px;
+        padding: 0 9px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        color: #374151;
+        background: #ffffff;
         text-decoration: none;
-        font-size: 10px;
+        font-size: 12px;
+        font-weight: 600;
     }
 
     .rfid-pagination nav span[aria-current="page"] span {
         background: #850000;
         border-color: #850000;
-        color: white;
+        color: #ffffff;
     }
 
     .rfid-pagination nav a:hover {
-        background: #fff1f1;
+        background: #fdf2f2;
+        border-color: #850000;
+        color: #850000;
     }
 
     /* RESPONSIVE */
     @media (max-width: 600px) {
+        .rfid-heading {
+            padding: 16px;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
         .rfid-heading h2 {
-            font-size: 18px;
+            font-size: 17px;
         }
 
         .rfid-date {
-            font-size: 10px;
+            font-size: 12px;
+            padding: 7px 12px;
         }
 
         .rfid-table-header {
@@ -330,7 +366,6 @@
 
 <div class="rfid-page">
 
-    <!-- JUDUL DAN TANGGAL -->
     <div class="rfid-heading">
 
         <div>
@@ -339,13 +374,17 @@
         </div>
 
         <div class="rfid-date">
-            <span>🗓️</span>
-            {{ now()->translatedFormat('l, d F Y') }}
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            <span>{{ $tanggalIndonesia }}</span>
         </div>
 
     </div>
 
-    <!-- NOTIFIKASI -->
     @if (session('success'))
         <div class="rfid-alert success">
             {{ session('success') }}
@@ -368,7 +407,6 @@
         </div>
     @endif
 
-    <!-- TABEL DATA RFID -->
     <section class="rfid-table-panel">
 
         <div class="rfid-table-header">
@@ -490,7 +528,6 @@
 
         </div>
 
-        <!-- PAGINATION -->
         <div class="rfid-pagination">
 
             <div>
