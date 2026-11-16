@@ -4,8 +4,37 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Absensi RFID - SDN 37 Sungai Bangek</title>
-
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
     <style>
+        body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    background: #f3f4f6;
+    color: #1f2937;
+}
+
+header h1,
+h2 {
+    font-family: 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
+    letter-spacing: -0.015em;
+}
+
+#jam {
+    margin: 0;
+    color: #111827;
+    font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
+    font-size: clamp(30px, 4vw, 48px);
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 1px;
+    line-height: 1.1;
+}
         * {
             box-sizing: border-box;
         }
@@ -15,7 +44,6 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            font-family: 'Segoe UI', Arial, sans-serif;
             background: #f3f4f6;
             color: #1f2937;
         }
@@ -30,7 +58,6 @@
 
         header h1 {
             margin: 0 0 4px;
-            font-family: Georgia, serif;
             font-size: clamp(22px, 2.8vw, 32px);
             letter-spacing: 0.5px;
         }
@@ -80,7 +107,6 @@
         h2 {
             margin: 0 0 8px;
             color: #850000;
-            font-family: Georgia, serif;
             font-size: clamp(20px, 2.2vw, 26px);
         }
 
