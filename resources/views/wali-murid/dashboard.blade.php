@@ -1,163 +1,190 @@
-
 @extends('layouts.app')
 
-@section('title', 'Dashboard Wali Murid')
+@section('title', 'Dashboard Wali Murid - Absensi RFID')
 
 @section('page-heading', 'Dashboard Wali Murid')
 
 @section('content')
 
+@php
+    $tanggalIndonesia = now()->locale('id')->translatedFormat('l, d F Y');
+@endphp
+
 <style>
     .wali-dashboard {
-        font-family: Georgia, 'Times New Roman', serif;
-        color: #292323;
-        padding: 4px 2px 20px;
+        font-family: 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
+        color: #1f2937;
+        width: 100%;
     }
-
-    /* SAMBUTAN */
 
     .wali-welcome {
         display: flex;
         justify-content: space-between;
         align-items: center;
         flex-wrap: wrap;
-        gap: 12px;
+        gap: 16px;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 18px 22px;
         margin-bottom: 20px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
     }
 
     .wali-welcome h2 {
-        margin: 0 0 5px;
+        margin: 0 0 4px;
         color: #850000;
+        font-family: inherit;
         font-size: 19px;
-        font-weight: bold;
+        font-weight: 700;
+        letter-spacing: -0.015em;
     }
 
     .wali-welcome p {
         margin: 0;
-        color: #777;
-        font-size: 12px;
-        font-style: italic;
+        color: #6b7280;
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 500;
     }
 
     .wali-welcome-date {
-        padding: 8px 12px;
-        border-radius: 6px;
-        background: #850000;
-        color: white;
-        font-family: Arial, sans-serif;
-        font-size: 11px;
-        font-weight: bold;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 15px;
+        border-radius: 8px;
+        background: #fdf2f2;
+        border: 1px solid #f5c6cb;
+        color: #850000;
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .wali-welcome-date svg {
+        width: 17px;
+        height: 17px;
+        flex-shrink: 0;
     }
 
     /* KARTU */
-
     .wali-card {
-        margin-bottom: 16px;
-        border: 1px solid #e8e1e1;
-        border-radius: 8px;
-        background: #fff;
+        margin-bottom: 18px;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        background: #ffffff;
         overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
     }
 
     .wali-card-header {
-        padding: 12px 15px;
+        padding: 15px 20px;
         background: #850000;
-        color: white;
+        color: #ffffff;
     }
 
     .wali-card-header h3 {
-        margin: 0;
-        font-size: 15px;
-        font-weight: bold;
+        margin: 0 0 3px;
+        font-family: inherit;
+        font-size: 15.5px;
+        font-weight: 700;
+        color: #ffffff;
     }
 
     .wali-card-header p {
-        margin: 4px 0 0;
-        color: #f1dada;
-        font-family: Arial, sans-serif;
-        font-size: 11px;
+        margin: 0;
+        color: #f3d1d1;
+        font-family: inherit;
+        font-size: 12px;
     }
 
     .wali-card-body {
-        padding: 16px;
+        padding: 20px;
     }
-
-    /* INFORMASI ANAK */
 
     .wali-data-grid {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 12px;
+        gap: 14px;
     }
 
     .wali-data-item {
         min-width: 0;
-        padding: 12px;
-        border: 1px solid #eee5e5;
-        border-radius: 6px;
-        background: #fdfafa;
+        padding: 14px 16px;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        background: #fafafa;
     }
 
     .wali-label {
-        margin-bottom: 6px;
-        color: #888;
-        font-family: Arial, sans-serif;
-        font-size: 11px;
+        margin-bottom: 5px;
+        color: #6b7280;
+        font-family: inherit;
+        font-size: 12px;
+        font-weight: 600;
     }
 
     .wali-value {
-        color: #4b2929;
-        font-family: Arial, sans-serif;
-        font-size: 13px;
-        font-weight: bold;
+        color: #111827;
+        font-family: inherit;
+        font-size: 14px;
+        font-weight: 700;
         overflow-wrap: anywhere;
     }
 
     .wali-status {
         display: inline-block;
-        padding: 4px 9px;
-        border-radius: 4px;
-        background: #e2f4e7;
-        color: #18733a;
-        font-family: Arial, sans-serif;
-        font-size: 10px;
-        font-weight: bold;
+        padding: 4px 10px;
+        border-radius: 6px;
+        background: #dcfce7;
+        color: #15803d;
+        font-family: inherit;
+        font-size: 11.5px;
+        font-weight: 700;
     }
 
-    /* INFORMASI AKUN */
+    .wali-status.inactive {
+        background: #fee2e2;
+        color: #b91c1c;
+    }
 
     .wali-account-info {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 14px;
     }
 
     .wali-account-icon {
         display: flex;
         align-items: center;
         justify-content: center;
-        flex: 0 0 42px;
-        width: 42px;
-        height: 42px;
-        border-radius: 50%;
-        background: #f5e7e7;
+        flex: 0 0 46px;
+        width: 46px;
+        height: 46px;
+        border-radius: 12px;
+        background: #fdf2f2;
+        border: 1px solid #f5c6cb;
         color: #850000;
-        font-family: Arial, sans-serif;
-        font-size: 19px;
+    }
+
+    .wali-account-icon svg {
+        width: 22px;
+        height: 22px;
     }
 
     .wali-account-text {
-        font-family: Arial, sans-serif;
-        font-size: 12px;
-        line-height: 1.7;
-        color: #555;
+        font-family: inherit;
+        font-size: 13px;
+        line-height: 1.6;
+        color: #4b5563;
     }
 
     .wali-account-text strong {
         color: #850000;
+        font-weight: 700;
     }
-
-    /* LOGOUT */
 
     .wali-logout {
         display: flex;
@@ -169,53 +196,64 @@
 
     .wali-logout p {
         margin: 0;
-        color: #777;
-        font-family: Arial, sans-serif;
-        font-size: 12px;
+        color: #6b7280;
+        font-family: inherit;
+        font-size: 13px;
+    }
+
+    .wali-logout form {
+        margin: 0;
     }
 
     .wali-logout-button {
-        padding: 8px 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 9px 16px;
         border: none;
-        border-radius: 5px;
+        border-radius: 8px;
         background: #850000;
-        color: white;
-        font-family: Arial, sans-serif;
-        font-size: 11px;
-        font-weight: bold;
+        color: #ffffff;
+        font-family: inherit;
+        font-size: 12.5px;
+        font-weight: 600;
         cursor: pointer;
-        transition: background .2s;
+        transition: background 0.18s ease;
     }
 
     .wali-logout-button:hover {
-        background: #650000;
+        background: #680000;
     }
 
-    /* RESPONSIVE */
-
     @media (max-width: 600px) {
+        .wali-welcome {
+            padding: 16px;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
         .wali-welcome h2 {
             font-size: 17px;
         }
 
+        .wali-welcome-date {
+            font-size: 12px;
+            padding: 7px 12px;
+        }
+
         .wali-data-grid {
             grid-template-columns: 1fr;
-            gap: 9px;
+            gap: 10px;
         }
 
         .wali-card-body {
-            padding: 12px;
-        }
-
-        .wali-welcome-date {
-            font-size: 10px;
+            padding: 16px;
         }
     }
 </style>
 
 <div class="wali-dashboard">
 
-    <!-- SAMBUTAN -->
     <div class="wali-welcome">
         <div>
             <h2>Selamat Datang, {{ auth()->user()->username }}!</h2>
@@ -223,11 +261,16 @@
         </div>
 
         <div class="wali-welcome-date">
-            🗓️ {{ now()->translatedFormat('l, d F Y') }}
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            <span>{{ $tanggalIndonesia }}</span>
         </div>
     </div>
 
-    <!-- INFORMASI ANAK -->
     <section class="wali-card">
 
         <div class="wali-card-header">
@@ -270,7 +313,7 @@
                 <div class="wali-data-item">
                     <div class="wali-label">Status Siswa</div>
                     <div>
-                        <span class="wali-status">
+                        <span class="wali-status {{ $anak->status !== 'aktif' ? 'inactive' : '' }}">
                             {{ ucfirst($anak->status) }}
                         </span>
                     </div>
@@ -281,7 +324,6 @@
         </div>
     </section>
 
-    <!-- INFORMASI AKUN -->
     <section class="wali-card">
 
         <div class="wali-card-header">
@@ -294,7 +336,10 @@
             <div class="wali-account-info">
 
                 <div class="wali-account-icon">
-                    👤
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
                 </div>
 
                 <div class="wali-account-text">
@@ -309,7 +354,6 @@
         </div>
     </section>
 
-    <!-- LOGOUT -->
     <section class="wali-card">
 
         <div class="wali-card-header">
@@ -327,7 +371,9 @@
 
                 <form action="{{ route('logout') }}" method="POST">
                     @csrf
-
+                    <button type="submit" class="wali-logout-button">
+                        Keluar Sekarang
+                    </button>
                 </form>
 
             </div>
