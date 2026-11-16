@@ -131,55 +131,24 @@
             color: #374151;
         }
 
-        /* EFEK KACA TERTUTUP (TANPA KOTAK FOKUS MERAH) */
-        .glass-display {
-            position: relative;
+        input {
             width: 100%;
-            border-radius: 10px;
-            overflow: hidden;
-            background: linear-gradient(135deg, rgba(243, 244, 246, 0.92), rgba(229, 231, 235, 0.65));
-            border: 1px solid #d1d5db;
-            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.05), 0 1px 0 rgba(255, 255, 255, 0.8);
-            cursor: default;
-        }
-
-        /* Lapisan kilau kaca di atas input */
-        .glass-display::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0) 60%);
-            pointer-events: none;
-        }
-
-        .glass-display input {
-            width: 100%;
-            padding: clamp(13px, 1.7vh, 17px) 16px;
-            border: none;
-            background: transparent;
-            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            padding: clamp(12px, 1.6vh, 16px) 14px;
+            border: 2px solid #d1d5db;
+            border-radius: 8px;
             font-size: clamp(15px, 1.5vw, 18px);
-            font-weight: 600;
-            letter-spacing: 0.04em;
-            color: #4b5563;
-            outline: none !important;
-            box-shadow: none !important;
+            outline: none;
+            color: #111827;
+            background: #f9fafb;
             caret-color: transparent;
             user-select: none;
-            pointer-events: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
 
-        .glass-display input::placeholder {
-            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
-            font-weight: 500;
-            letter-spacing: normal;
-            color: #9ca3af;
-        }
-
-        .glass-display input:focus {
-            outline: none !important;
-            border: none !important;
-            box-shadow: none !important;
+        input:focus {
+            border-color: #850000;
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(133, 0, 0, 0.14);
         }
 
         button {
@@ -211,7 +180,6 @@
             font-size: clamp(12px, 1.2vw, 13px);
         }
 
-        /* Kotak Hasil Scan */
         .result {
             flex: 1;
             display: flex;
@@ -238,7 +206,6 @@
             line-height: 1.6;
         }
 
-        /* Kondisi Hadir Tepat Waktu (Hijau) */
         .result.success {
             background: #f0fdf4;
             border: 2px solid #86efac;
@@ -246,7 +213,6 @@
             text-align: left;
         }
 
-        /* Kondisi Terlambat atau Error (Merah) */
         .result.late,
         .result.error {
             background: #fef2f2;
@@ -280,7 +246,6 @@
             color: #dc2626;
         }
 
-        /* Responsif untuk Tablet dan HP */
         @media (max-width: 820px) {
             main {
                 grid-template-columns: 1fr;
@@ -316,19 +281,16 @@
 
             <form id="scanForm">
                 <label for="uid">UID Kartu RFID</label>
-                <div class="glass-display">
-                    <input
-                        type="text"
-                        id="uid"
-                        name="uid"
-                        placeholder="Siap memindai kartu RFID..."
-                        autocomplete="off"
-                        tabindex="-1"
-                        autofocus
-                        required
-                        maxlength="100"
-                    >
-                </div>
+                <input
+                    type="text"
+                    id="uid"
+                    name="uid"
+                    placeholder="Siap memindai kartu RFID..."
+                    autocomplete="off"
+                    autofocus
+                    required
+                    maxlength="100"
+                >
 
                 <button type="submit" id="scanButton">
                     Proses Absensi
@@ -336,7 +298,7 @@
             </form>
 
             <p class="helper-text">
-                Layar terkunci otomatis untuk pembacaan kartu RFID.
+                Kolom ini hanya menerima pemindaian otomatis dari kartu RFID.
             </p>
         </section>
 
@@ -357,24 +319,22 @@
 
         let sedangProses = false;
 
-        // ==========================================
-        // PROTEKSI ANTI KETIK MANUAL & KLIK
-        // ==========================================
+        // PROTEKSI ANTI KETIK MANUAL (KHUSUS READER)
         let waktuKetikTerakhir = 0;
         let timerResetManual = null;
         const BATAS_KECEPATAN_SCAN_MS = 65;
 
-        uidInput.addEventListener('paste', (e) => e.preventDefault());
+      uidInput.addEventListener('paste', (e) => e.preventDefault());
         uidInput.addEventListener('drop', (e) => e.preventDefault());
         uidInput.addEventListener('contextmenu', (e) => e.preventDefault());
 
-        uidInput.addEventListener('keydown', function (event) {
+      uidInput.addEventListener('keydown', function (event) {
             if (sedangProses) {
                 event.preventDefault();
                 return;
             }
 
-            const tombolDilarang = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab'];
+           const tombolDilarang = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab'];
             if (tombolDilarang.includes(event.key) || event.ctrlKey || event.metaKey || event.altKey) {
                 event.preventDefault();
                 return;
@@ -383,7 +343,7 @@
             const sekarang = Date.now();
             const selisihWaktu = sekarang - waktuKetikTerakhir;
 
-            if (uidInput.value.length > 0 && selisihWaktu > BATAS_KECEPATAN_SCAN_MS) {
+           if (uidInput.value.length > 0 && selisihWaktu > BATAS_KECEPATAN_SCAN_MS) {
                 uidInput.value = '';
             }
 
@@ -399,9 +359,7 @@
             }
         });
 
-        // ==========================================
         // JAM & TANGGAL REALTIME
-        // ==========================================
         function perbaruiWaktu() {
             const sekarang = new Date();
 
@@ -427,9 +385,7 @@
         perbaruiWaktu();
         setInterval(perbaruiWaktu, 1000);
 
-        // ==========================================
         // PROSES SUBMIT SCAN
-        // ==========================================
         form.addEventListener('submit', async function (event) {
             event.preventDefault();
             clearTimeout(timerResetManual);
@@ -520,10 +476,11 @@
             }
         });
 
-        // Pastikan kolom UID selalu aktif di latar belakang tanpa efek kotak merah
-        window.addEventListener('focus', () => uidInput.focus());
-        document.addEventListener('click', () => uidInput.focus());
-        document.addEventListener('DOMContentLoaded', () => uidInput.focus());
+        document.addEventListener('click', function (event) {
+            if (!event.target.closest('input, button')) {
+                uidInput.focus();
+            }
+        });
     </script>
 </body>
 </html>
