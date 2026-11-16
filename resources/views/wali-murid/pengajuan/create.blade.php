@@ -75,7 +75,7 @@
         border-left: 4px solid #850000;
         border-radius: 6px;
         padding: 14px 18px;
-        margin-bottom: 22px;
+        margin-bottom: 18px;
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
         gap: 8px 16px;
@@ -90,6 +90,18 @@
 
     .izin-student-info strong {
         color: #850000;
+    }
+
+    .izin-required-note {
+        margin: 0 0 20px;
+        font-size: 12px;
+        color: #6b7280;
+    }
+
+    .required-star {
+        color: #dc2626;
+        font-weight: 700;
+        margin-left: 3px;
     }
 
     .izin-form-row {
@@ -257,6 +269,10 @@
                 <p><strong>Kelas:</strong> {{ $anak->kelas->nama_kelas ?? '-' }}</p>
             </div>
 
+            <p class="izin-required-note">
+                Kolom bertanda <span class="required-star">*</span> wajib diisi.
+            </p>
+
             @if ($errors->any())
                 <div class="izin-alert">
                     <strong>Pengajuan belum dapat dikirim:</strong>
@@ -276,7 +292,9 @@
                 @csrf
 
                 <div class="izin-form-group">
-                    <label for="jenis" class="izin-label">Jenis Pengajuan</label>
+                    <label for="jenis" class="izin-label">
+                        Jenis Pengajuan <span class="required-star">*</span>
+                    </label>
                     <select id="jenis" name="jenis" class="izin-select" required>
                         <option value="">-- Pilih Jenis --</option>
                         <option value="izin" @selected(old('jenis') === 'izin')>
@@ -290,7 +308,9 @@
 
                 <div class="izin-form-row">
                     <div class="izin-form-group">
-                        <label for="tanggal_mulai" class="izin-label">Tanggal Mulai</label>
+                        <label for="tanggal_mulai" class="izin-label">
+                            Tanggal Mulai <span class="required-star">*</span>
+                        </label>
                         <input
                             type="date"
                             id="tanggal_mulai"
@@ -302,7 +322,9 @@
                     </div>
 
                     <div class="izin-form-group">
-                        <label for="tanggal_selesai" class="izin-label">Tanggal Selesai</label>
+                        <label for="tanggal_selesai" class="izin-label">
+                            Tanggal Selesai <span class="required-star">*</span>
+                        </label>
                         <input
                             type="date"
                             id="tanggal_selesai"
@@ -318,7 +340,9 @@
                 </div>
 
                 <div class="izin-form-group">
-                    <label for="alasan" class="izin-label">Alasan Izin/Sakit</label>
+                    <label for="alasan" class="izin-label">
+                        Alasan Izin/Sakit <span class="required-star">*</span>
+                    </label>
                     <textarea
                         id="alasan"
                         name="alasan"
@@ -343,7 +367,7 @@
                     </p>
                 </div>
 
-                <div class="izin-actions">
+                <div class="actions izin-actions">
                     <a href="{{ route('wali.pengajuan.index') }}" class="izin-btn-cancel">
                         Batal
                     </a>
@@ -369,4 +393,4 @@
         });
     }
 </script>
-@endsection 
+@endsection
