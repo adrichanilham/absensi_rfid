@@ -589,18 +589,10 @@
 
             @if ($role === 'operator')
 
-                <div class="nav-label">Perangkat & Absensi</div>
-
                 <a class="nav-link {{ request()->routeIs('rfid.*') ? 'active' : '' }}"
                    href="{{ route('rfid.index') }}">
                     <span class="nav-icon">▧</span>
                     Data RFID
-                </a>
-
-                <a class="nav-link {{ request()->routeIs('absensi.scan') ? 'active' : '' }}"
-                   href="{{ route('absensi.scan') }}">
-                    <span class="nav-icon">▥</span>
-                    Scan RFID
                 </a>
 
             @endif
@@ -634,12 +626,7 @@
         @if ($role === 'operator')
             <div class="sidebar-bottom">
                 <div class="rfid-panel">
-                    <h3>Akses Cepat RFID</h3>
-
-                    <a href="{{ route('rfid.index') }}">
-                        ▸ Data Perangkat
-                    </a>
-
+                    <h3>LAKUKAN SCAN ABSENSI</h3>
                     <a href="{{ route('absensi.scan') }}">
                         ▸ Scan RFID
                     </a>
