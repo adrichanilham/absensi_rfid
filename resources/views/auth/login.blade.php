@@ -1,10 +1,13 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Absensi RFID SDN 37 Sungai Bangek</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
         * {
@@ -18,68 +21,87 @@
             align-items: center;
             justify-content: center;
             padding: 20px;
-            font-family: Arial, sans-serif;
-            background: #f1f1f1;
-            color: #1e293b;
+            font-family: 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
+            background: #f3f4f6;
+            color: #1f2937;
         }
 
         .login-container {
             width: 100%;
-            max-width: 1100px;
-            min-height: 460px;
+            max-width: 1040px;
+            min-height: 490px;
             display: grid;
-            grid-template-columns: 53% 47%;
+            grid-template-columns: 52% 48%;
             overflow: hidden;
-            border-radius: 5px;
-            background: #800000;
+            border-radius: 16px;
+            background: #850000;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
         }
 
         /* BAGIAN KIRI */
-
         .login-left {
-            background: #800000;
+            background: #850000;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 25px;
+            padding: 32px 24px;
         }
 
         .login-card {
             width: 100%;
-            max-width: 470px;
-            background: white;
-            padding: 28px 22px;
-            border-radius: 15px;
+            max-width: 440px;
+            background: #ffffff;
+            padding: 32px 28px;
+            border-radius: 14px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
         }
 
         .login-title {
             text-align: center;
-            margin-bottom: 8px;
+            margin-bottom: 22px;
+        }
+
+        .login-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            margin-bottom: 12px;
+            border-radius: 20px;
+            background: #fdf2f2;
+            border: 1px solid #f5c6cb;
+            color: #850000;
+            font-size: 11.5px;
+            font-weight: 700;
         }
 
         .login-title h2 {
-            font-family: Georgia, serif;
+            font-family: inherit;
             font-size: 19px;
-            line-height: 1.2;
-            color: #800000;
+            line-height: 1.35;
+            color: #850000;
             margin: 0;
-            font-weight: bold;
+            font-weight: 800;
+            letter-spacing: -0.015em;
         }
 
         .login-title p {
-            margin: 5px 0 20px;
+            margin: 6px 0 0;
+            color: #6b7280;
             font-size: 13px;
-            font-weight: bold;
+            font-weight: 500;
         }
 
         .form-group {
-            margin-bottom: 13px;
+            margin-bottom: 16px;
         }
 
         .form-group label {
             display: block;
-            font-size: 12px;
-            margin-bottom: 5px;
+            color: #374151;
+            font-size: 12.5px;
+            font-weight: 600;
+            margin-bottom: 6px;
         }
 
         .input-wrapper {
@@ -88,17 +110,21 @@
 
         .form-group input {
             width: 100%;
-            height: 39px;
-            padding: 10px;
-            border: 1px solid #999;
+            height: 42px;
+            padding: 9px 13px;
+            border: 1px solid #d1d5db;
             border-radius: 8px;
+            background: #ffffff;
+            color: #1f2937;
+            font-family: inherit;
             font-size: 13px;
             outline: none;
+            transition: border-color 0.18s ease, box-shadow 0.18s ease;
         }
 
         .form-group input:focus {
-            border-color: #800000;
-            box-shadow: 0 0 0 2px #80000020;
+            border-color: #850000;
+            box-shadow: 0 0 0 3px rgba(133, 0, 0, 0.1);
         }
 
         .password-input {
@@ -107,121 +133,152 @@
 
         .toggle-password {
             position: absolute;
-            right: 10px;
+            right: 8px;
             top: 50%;
             transform: translateY(-50%);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
             border: none;
+            border-radius: 6px;
             background: transparent;
+            color: #6b7280;
             cursor: pointer;
-            padding: 4px;
-            font-size: 17px;
+            padding: 0;
+            transition: color 0.18s ease, background 0.18s ease;
+        }
+
+        .toggle-password:hover {
+            color: #850000;
+            background: #fdf2f2;
+        }
+
+        .toggle-password svg {
+            width: 18px;
+            height: 18px;
         }
 
         .login-button {
             width: 100%;
-            height: 49px;
-            margin-top: 5px;
-            background: #800000;
-            color: white;
+            height: 44px;
+            margin-top: 8px;
+            background: #850000;
+            color: #ffffff;
             border: none;
             border-radius: 8px;
-            font-family: Georgia, serif;
-            font-size: 19px;
-            font-weight: bold;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 700;
             cursor: pointer;
-            transition: 0.2s;
+            transition: background 0.18s ease;
         }
 
         .login-button:hover {
-            background: #600000;
+            background: #680000;
         }
 
         .rfid-status {
             text-align: center;
-            color: #00b900;
-            font-weight: bold;
+            color: #15803d;
+            font-weight: 600;
             font-size: 12px;
-            margin: 10px 0 0;
+            margin: 14px 0 0;
         }
 
-        /* PESAN ERROR */
-
+        /* NOTIFIKASI */
         .error, .success {
-            padding: 10px;
-            border-radius: 7px;
-            margin-bottom: 12px;
-            font-size: 12px;
+            padding: 11px 13px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 12.5px;
+            font-weight: 500;
+            line-height: 1.5;
         }
 
         .error {
-            background: #fee2e2;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
             color: #991b1b;
         }
 
         .success {
-            background: #dcfce7;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
             color: #166534;
         }
 
         /* BAGIAN KANAN */
-
         .login-right {
             position: relative;
-            min-height: 460px;
+            min-height: 490px;
             background-image:
+                linear-gradient(to bottom, rgba(133, 0, 0, 0.18), rgba(45, 0, 0, 0.55)),
                 url('/images/sekolah.jpg');
             background-size: cover;
             background-position: center;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
+            justify-content: flex-end;
             align-items: flex-start;
-            padding: 25px 15px;
+            padding: 28px;
         }
 
-        .login-right h1 {
-            margin: 0;
-            text-align: center;
-            color: #e00000;
-            font-family: Georgia, serif;
-            font-size: 25px;
-            line-height: 1.4;
-            font-weight: bold;
-            text-shadow: 1px 2px 2px white;
+        .login-right-caption {
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(4px);
+            padding: 14px 18px;
+            border-radius: 10px;
+            border-left: 4px solid #850000;
+            max-width: 360px;
+        }
+
+        .login-right-caption strong {
+            display: block;
+            color: #850000;
+            font-size: 13.5px;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+
+        .login-right-caption span {
+            display: block;
+            color: #4b5563;
+            font-size: 12px;
+            line-height: 1.45;
         }
 
         /* RESPONSIVE */
-
-        @media (max-width: 700px) {
+        @media (max-width: 768px) {
             body {
-                padding: 12px;
+                padding: 14px;
             }
 
             .login-container {
                 grid-template-columns: 1fr;
-                max-width: 480px;
+                max-width: 460px;
+                border-radius: 14px;
             }
 
             .login-left {
-                padding: 30px 18px;
+                padding: 26px 18px;
             }
 
             .login-right {
-                min-height: 220px;
+                min-height: 210px;
                 order: -1;
-            }
-
-            .login-right h1 {
-                font-size: 21px;
+                padding: 18px;
             }
         }
 
-        @media (max-width: 380px) {
+        @media (max-width: 400px) {
             .login-card {
-                padding: 22px 16px;
+                padding: 24px 18px;
             }
 
             .login-title h2 {
-                font-size: 16px;
+                font-size: 17px;
             }
         }
     </style>
@@ -237,11 +294,11 @@
         <main class="login-card">
 
             <div class="login-title">
+                <span class="login-badge">Absensi Digital</span>
                 <h2>
                     SISTEM ABSENSI SEKOLAH<br>
                     SDN 37 SUNGAI BANGEK
                 </h2>
-
                 <p>Terintegrasi Dengan Mesin RFID</p>
             </div>
 
@@ -263,14 +320,14 @@
                 @csrf
 
                 <div class="form-group">
-                    <label for="username">Username/Email</label>
+                    <label for="username">Username / Email</label>
 
                     <div class="input-wrapper">
                         <input
                             id="username"
                             name="username"
                             type="text"
-                            placeholder="masukkan username atau email"
+                            placeholder="Masukkan username atau email"
                             value="{{ old('username') }}"
                             autocomplete="username"
                             required
@@ -288,7 +345,7 @@
                             name="password"
                             type="password"
                             class="password-input"
-                            placeholder="masukkan password"
+                            placeholder="Masukkan password"
                             autocomplete="current-password"
                             required
                         >
@@ -297,20 +354,19 @@
                             type="button"
                             class="toggle-password"
                             onclick="togglePassword()"
-                            aria-label="Tampilkan password"
+                            aria-label="Tampilkan atau sembunyikan password"
                         >
-                            👁
+                            <svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                <circle cx="12" cy="12" r="3" />
+                            </svg>
                         </button>
                     </div>
                 </div>
 
                 <button type="submit" class="login-button">
-                    Login
+                    Masuk ke Sistem
                 </button>
-
-                <p class="rfid-status">
-                    
-                </p>
 
             </form>
 
@@ -320,9 +376,10 @@
 
     <!-- BAGIAN FOTO SEKOLAH -->
     <div class="login-right">
-
-    
-
+        <div class="login-right-caption">
+            <strong>SDN 37 Sungai Bangek</strong>
+            <span>Pencatatan kehadiran siswa secara cepat, akurat, dan terpantau langsung.</span>
+        </div>
     </div>
 
 </div>
@@ -330,10 +387,15 @@
 <script>
     function togglePassword() {
         const password = document.getElementById('password');
+        const eyeIcon = document.getElementById('eye-icon');
 
-        password.type = password.type === 'password'
-            ? 'text'
-            : 'password';
+        if (password.type === 'password') {
+            password.type = 'text';
+            eyeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" /><line x1="1" y1="1" x2="23" y2="23" />';
+        } else {
+            password.type = 'password';
+            eyeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" />';
+        }
     }
 </script>
 

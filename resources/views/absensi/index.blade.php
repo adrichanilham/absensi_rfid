@@ -1,4 +1,3 @@
-
 @extends('layouts.app')
 
 @section('title', 'Data Absensi - Absensi RFID')
@@ -9,12 +8,13 @@
 
 @php
     $isOperator = auth()->user()->role === 'operator';
+    $tanggalIndonesia = now()->locale('id')->translatedFormat('l, d F Y');
 @endphp
 
 <style>
     .attendance-page {
-        font-family: Arial, sans-serif;
-        color: #292929;
+        font-family: 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
+        color: #1f2937;
         width: 100%;
     }
 
@@ -23,79 +23,98 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        gap: 15px;
+        gap: 16px;
         flex-wrap: wrap;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 18px 22px;
         margin-bottom: 20px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
     }
 
     .attendance-heading h2 {
-        margin: 0 0 5px;
+        margin: 0 0 4px;
         color: #850000;
-        font-family: Georgia, serif;
-        font-size: 20px;
+        font-family: inherit;
+        font-size: 19px;
+        font-weight: 700;
+        letter-spacing: -0.015em;
     }
 
     .attendance-heading p {
         margin: 0;
-        color: #777;
-        font-family: Georgia, serif;
-        font-size: 12px;
-        font-style: italic;
+        color: #6b7280;
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 500;
     }
 
     .attendance-date {
-        display: flex;
+        display: inline-flex;
         align-items: center;
         gap: 8px;
-        padding: 9px 13px;
-        background: #850000;
-        color: white;
-        border-radius: 7px;
-        font-family: Georgia, serif;
-        font-size: 12px;
-        font-weight: bold;
+        padding: 9px 15px;
+        background: #fdf2f2;
+        border: 1px solid #f5c6cb;
+        color: #850000;
+        border-radius: 8px;
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .attendance-date svg {
+        width: 17px;
+        height: 17px;
+        flex-shrink: 0;
     }
 
     /* NOTIFIKASI */
     .attendance-alert {
-        padding: 11px 14px;
-        margin-bottom: 15px;
-        border-radius: 7px;
+        padding: 12px 15px;
+        margin-bottom: 16px;
+        border-radius: 8px;
         font-size: 13px;
+        font-weight: 500;
     }
 
     .attendance-alert.success {
-        background: #dcfce7;
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
         color: #166534;
     }
 
     .attendance-alert.error {
-        background: #fee2e2;
+        background: #fef2f2;
+        border: 1px solid #fecaca;
         color: #991b1b;
     }
 
     /* FILTER */
     .filter-panel {
-        background: #fff;
-        border: 1px solid #e5dddd;
-        border-radius: 8px;
-        padding: 15px;
-        margin-bottom: 18px;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 18px 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
     }
 
     .filter-title {
         color: #850000;
-        font-family: Georgia, serif;
+        font-family: inherit;
         font-size: 15px;
-        font-weight: bold;
-        margin: 0 0 13px;
+        font-weight: 700;
+        margin: 0 0 14px;
     }
 
     .attendance-filters {
         display: grid;
         grid-template-columns: 1.1fr 1fr 1fr auto;
         align-items: end;
-        gap: 10px;
+        gap: 12px;
     }
 
     .filter-group {
@@ -106,57 +125,59 @@
     }
 
     .filter-group label {
-        color: #555;
-        font-size: 11px;
+        color: #374151;
+        font-size: 12px;
         font-weight: 600;
     }
 
     .filter-group input,
     .filter-group select {
         width: 100%;
-        height: 36px;
-        padding: 7px 9px;
-        border: 1px solid #ddd;
-        border-radius: 6px;
-        background: #fff;
-        color: #333;
-        font-family: Arial, sans-serif;
-        font-size: 12px;
+        height: 38px;
+        padding: 7px 11px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        background: #ffffff;
+        color: #1f2937;
+        font-family: inherit;
+        font-size: 13px;
         outline: none;
+        transition: border-color 0.18s, box-shadow 0.18s;
     }
 
     .filter-group input:focus,
     .filter-group select:focus {
         border-color: #850000;
-        box-shadow: 0 0 0 2px rgba(133,0,0,.08);
+        box-shadow: 0 0 0 3px rgba(133, 0, 0, 0.1);
     }
 
     .filter-actions {
         display: flex;
         align-items: center;
-        gap: 7px;
+        gap: 8px;
     }
 
     .btn-attendance {
-        height: 36px;
-        padding: 0 13px;
+        height: 38px;
+        padding: 0 15px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: 5px;
+        gap: 6px;
         border: 1px solid transparent;
-        border-radius: 6px;
+        border-radius: 8px;
         text-decoration: none;
-        font-size: 11px;
-        font-weight: bold;
+        font-family: inherit;
+        font-size: 12.5px;
+        font-weight: 600;
         cursor: pointer;
         white-space: nowrap;
-        transition: .2s;
+        transition: all 0.18s ease;
     }
 
     .btn-filter {
         background: #850000;
-        color: white;
+        color: #ffffff;
     }
 
     .btn-filter:hover {
@@ -164,21 +185,23 @@
     }
 
     .btn-reset {
-        background: white;
-        color: #850000;
-        border-color: #e3d0d0;
+        background: #ffffff;
+        color: #374151;
+        border-color: #d1d5db;
     }
 
     .btn-reset:hover {
-        background: #fff1f1;
+        background: #f9fafb;
+        border-color: #9ca3af;
     }
 
     /* TABEL */
     .attendance-table-panel {
-        background: white;
-        border: 1px solid #e5dddd;
-        border-radius: 8px;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
         overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
     }
 
     .attendance-table-header {
@@ -187,29 +210,32 @@
         align-items: center;
         flex-wrap: wrap;
         gap: 12px;
-        padding: 13px 15px;
+        padding: 15px 20px;
         background: #850000;
-        color: white;
+        color: #ffffff;
     }
 
     .attendance-table-header h3 {
-        margin: 0 0 4px;
-        font-family: Georgia, serif;
-        font-size: 16px;
+        margin: 0 0 3px;
+        font-family: inherit;
+        font-size: 15.5px;
+        font-weight: 700;
+        color: #ffffff;
     }
 
     .attendance-table-header p {
         margin: 0;
-        color: #f1dada;
-        font-size: 10px;
+        color: #f3d1d1;
+        font-size: 12px;
     }
 
     .attendance-count {
-        padding: 6px 9px;
-        border-radius: 5px;
-        background: rgba(255,255,255,.15);
-        color: white;
-        font-size: 10px;
+        padding: 6px 12px;
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.16);
+        color: #ffffff;
+        font-size: 12px;
+        font-weight: 600;
     }
 
     .attendance-table-wrap {
@@ -220,31 +246,31 @@
     .attendance-table {
         width: 100%;
         border-collapse: collapse;
-        font-family: Arial, sans-serif;
+        font-family: inherit;
         min-width: 850px;
     }
 
     .attendance-table thead th {
-        padding: 11px 10px;
-        background: #f3eeee;
-        color: #700000;
-        font-size: 11px;
-        font-weight: bold;
+        padding: 12px 14px;
+        background: #f9fafb;
+        color: #374151;
+        font-size: 12px;
+        font-weight: 700;
         text-align: left;
         white-space: nowrap;
-        border-bottom: 1px solid #e6dede;
+        border-bottom: 1px solid #e5e7eb;
     }
 
     .attendance-table tbody td {
-        padding: 10px;
-        border-bottom: 1px solid #eee;
-        color: #444;
-        font-size: 11px;
+        padding: 12px 14px;
+        border-bottom: 1px solid #f3f4f6;
+        color: #374151;
+        font-size: 13px;
         vertical-align: middle;
     }
 
     .attendance-table tbody tr:hover {
-        background: #fff8f8;
+        background: #fdf8f8;
     }
 
     .attendance-table tbody tr:last-child td {
@@ -252,26 +278,26 @@
     }
 
     .student-name {
-        color: #292929;
-        font-weight: bold;
+        color: #111827;
+        font-weight: 600;
     }
 
     .student-nisn {
         display: block;
         margin-top: 3px;
-        color: #999;
-        font-size: 9px;
+        color: #6b7280;
+        font-size: 11px;
     }
 
     /* BADGE STATUS */
     .status-badge {
         display: inline-block;
-        min-width: 48px;
-        padding: 5px 8px;
-        border-radius: 20px;
+        min-width: 56px;
+        padding: 4px 10px;
+        border-radius: 6px;
         text-align: center;
-        font-size: 10px;
-        font-weight: bold;
+        font-size: 11.5px;
+        font-weight: 700;
         text-transform: capitalize;
     }
 
@@ -281,13 +307,13 @@
     }
 
     .status-terlambat {
-        background: #ffedd5;
-        color: #c2410c;
+        background: #fef3c7;
+        color: #b45309;
     }
 
     .status-izin {
-        background: #fef3c7;
-        color: #a16207;
+        background: #dbeafe;
+        color: #1d4ed8;
     }
 
     .status-sakit {
@@ -301,8 +327,8 @@
     }
 
     .status-default {
-        background: #eee;
-        color: #555;
+        background: #f3f4f6;
+        color: #4b5563;
     }
 
     /* TOMBOL KOREKSI */
@@ -311,30 +337,30 @@
         align-items: center;
         justify-content: center;
         gap: 5px;
-        padding: 6px 10px;
+        padding: 6px 12px;
         border: 1px solid #e6caca;
-        border-radius: 5px;
-        background: white;
+        border-radius: 6px;
+        background: #ffffff;
         color: #850000;
         text-decoration: none;
-        font-size: 10px;
-        font-weight: bold;
+        font-size: 12px;
+        font-weight: 600;
         white-space: nowrap;
-        transition: .2s;
+        transition: all 0.18s ease;
     }
 
     .btn-correction:hover {
         background: #850000;
         border-color: #850000;
-        color: white;
+        color: #ffffff;
     }
 
     /* DATA KOSONG */
     .attendance-empty {
-        padding: 35px 15px !important;
+        padding: 32px 16px !important;
         text-align: center;
-        color: #999 !important;
-        font-size: 12px !important;
+        color: #6b7280 !important;
+        font-size: 13px !important;
     }
 
     /* PAGINATION */
@@ -344,10 +370,11 @@
         align-items: center;
         flex-wrap: wrap;
         gap: 10px;
-        padding: 12px 15px;
-        border-top: 1px solid #eee;
-        font-size: 11px;
-        color: #777;
+        padding: 13px 18px;
+        border-top: 1px solid #e5e7eb;
+        background: #fafafa;
+        font-size: 12px;
+        color: #6b7280;
     }
 
     .attendance-pagination nav {
@@ -371,25 +398,28 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        min-width: 28px;
-        height: 28px;
-        padding: 0 8px;
-        border: 1px solid #e5dddd;
-        border-radius: 5px;
-        color: #850000;
-        background: white;
+        min-width: 30px;
+        height: 30px;
+        padding: 0 9px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        color: #374151;
+        background: #ffffff;
         text-decoration: none;
-        font-size: 10px;
+        font-size: 12px;
+        font-weight: 600;
     }
 
     .attendance-pagination nav span[aria-current="page"] span {
         background: #850000;
         border-color: #850000;
-        color: white;
+        color: #ffffff;
     }
 
     .attendance-pagination nav a:hover {
-        background: #fff1f1;
+        background: #fdf2f2;
+        border-color: #850000;
+        color: #850000;
     }
 
     /* RESPONSIVE */
@@ -405,15 +435,18 @@
 
     @media (max-width: 550px) {
         .attendance-heading {
+            padding: 16px;
+            flex-direction: column;
             align-items: flex-start;
         }
 
         .attendance-heading h2 {
-            font-size: 18px;
+            font-size: 17px;
         }
 
         .attendance-date {
-            font-size: 10px;
+            font-size: 12px;
+            padding: 7px 12px;
         }
 
         .attendance-filters {
@@ -449,8 +482,13 @@
         </div>
 
         <div class="attendance-date">
-            <span>🗓️</span>
-            {{ now()->translatedFormat('l, d F Y') }}
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            <span>{{ $tanggalIndonesia }}</span>
         </div>
     </div>
 
