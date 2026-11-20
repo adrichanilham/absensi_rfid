@@ -1,8 +1,14 @@
 import argparse
+import errno
 import ftplib
+import hashlib
 import os
 import re
+import socket
 import ssl
+import threading
+import time
+from contextlib import suppress
 from pathlib import Path, PurePosixPath
 
 
@@ -26,6 +32,10 @@ VITE_MANIFESTS = ("build/fonts-manifest.json", "build/manifest.json")
 PUBLIC_PUBLISH_LAST = (*VITE_MANIFESTS, "manifest.webmanifest", "sw.js", "index.php")
 REMOTE_PUBLIC = PurePosixPath("/htdocs")
 REMOTE_APP = REMOTE_PUBLIC / "laravel_app"
+SOCKET_TIMEOUT = 30
+MAX_RETRIES = 2
+FTP_ERRORS = (ValueError, OSError, EOFError, ftplib.Error)
+UNAVAILABLE_VERIFICATION_CODES = {"500", "502", "504", "550"}
 
 
 def excluded_name(name):
@@ -106,29 +116,179 @@ def ensure_directory(ftp, path, available):
     available.add(path)
 
 
-def upload_packages(ftp, package, app, public):
-    ftp.cwd(REMOTE_PUBLIC.as_posix())
-    available = {REMOTE_PUBLIC}
-    # Empty runtime directories can be provisioned without uploading any of their contents.
-    for directory in RUNTIME_DIRECTORIES:
-        ensure_directory(ftp, REMOTE_APP / directory, available)
+class FTPSSetupError(ftplib.Error):
+    pass
 
+
+def is_transient(error):
+    if isinstance(error, ssl.SSLError):
+        return False
+    if isinstance(error, ftplib.error_temp):
+        return str(error)[:3] in {"421", "425", "426", "450", "451"}
+    if isinstance(error, socket.gaierror):
+        return error.errno == socket.EAI_AGAIN
+    return isinstance(error, (ConnectionError, TimeoutError, EOFError)) or (
+        isinstance(error, OSError) and error.errno in {errno.ENETDOWN, errno.ENETUNREACH, errno.EHOSTUNREACH}
+    )
+
+
+class FTPSession:
+    def __init__(self, context, server, username, password):
+        self.context = context
+        self.server = server
+        self.username = username
+        self.password = password
+        self.ftp = None
+        self.available = set()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exception_type, exception, traceback):
+        if exception_type is None and self.ftp is not None:
+            with suppress(*FTP_ERRORS):
+                self.ftp.quit()
+        self.close()
+
+    def close(self):
+        if self.ftp is not None:
+            with suppress(OSError):
+                self.ftp.close()
+            self.ftp = None
+        self.available.clear()
+
+    def open(self):
+        self.ftp = ftplib.FTP_TLS(context=self.context, timeout=SOCKET_TIMEOUT)
+        self.ftp.connect(self.server, port=21)
+        try:
+            self.ftp.auth()
+            self.ftp.login(self.username, self.password)
+            self.ftp.prot_p()
+        except ssl.SSLError:
+            raise
+        except FTP_ERRORS:
+            raise FTPSSetupError() from None
+        self.ftp.set_pasv(True)
+        self.ftp.voidcmd("TYPE I")  # SIZE and SHA-256 must both describe binary data.
+        self.ftp.cwd(REMOTE_PUBLIC.as_posix())
+        self.available.add(REMOTE_PUBLIC)
+
+    def run(self, operation):
+        for attempt in range(MAX_RETRIES + 1):
+            try:
+                if self.ftp is None:
+                    self.open()
+                return operation(self.ftp, self.available)
+            except FTP_ERRORS as error:
+                self.close()
+                if attempt == MAX_RETRIES or not is_transient(error):
+                    raise
+                print(f"Temporary FTPS failure ({type(error).__name__}); reconnecting, retry {attempt + 1}/{MAX_RETRIES}.",
+                      flush=True)
+                time.sleep(2 ** attempt)
+
+
+class Progress:
+    def __init__(self, total_files, total_bytes):
+        self.total_files = total_files
+        self.total_bytes = total_bytes
+        self.completed_files = 0
+        self.completed_bytes = 0
+        self.uploaded_bytes = 0
+        self.verified_files = 0
+        self.lock = threading.Lock()
+        self.stopped = threading.Event()
+
+    def __enter__(self):
+        self.started = time.monotonic()
+        self.report("started")
+        self.worker = threading.Thread(target=self.heartbeat, daemon=True)
+        self.worker.start()
+        return self
+
+    def __exit__(self, exception_type, exception, traceback):
+        self.stopped.set()
+        self.worker.join()
+        self.report("completed" if exception_type is None else "stopped")
+
+    def heartbeat(self):
+        while not self.stopped.wait(30):
+            self.report("in progress")
+
+    def report(self, phase):
+        with self.lock:
+            self._print_progress(phase)
+
+    def _print_progress(self, phase):
+        elapsed = time.monotonic() - self.started
+        rate = self.uploaded_bytes / elapsed if elapsed > 0 else 0
+        print(
+            f"FTPS {phase}: {self.completed_files}/{self.total_files} files, "
+            f"{self.completed_bytes}/{self.total_bytes} bytes complete, "
+            f"{self.verified_files} verified without upload, {self.uploaded_bytes} bytes uploaded, "
+            f"{rate:.1f} uploaded bytes/s average, elapsed {elapsed:.1f}s.",
+            flush=True,
+        )
+
+    def complete_file(self, size, verified):
+        with self.lock:
+            self.completed_files += 1
+            self.completed_bytes += size
+            if verified:
+                self.verified_files += 1
+            else:
+                self.uploaded_bytes += size
+            if self.completed_files % 100 == 0:
+                self._print_progress("in progress")
+
+
+def remote_matches(ftp, destination, source, size):
+    try:
+        if ftp.size(destination) != size:
+            return False
+        remote_hash = hashlib.sha256()
+        ftp.retrbinary(f"RETR {destination}", remote_hash.update)
+    except ftplib.error_perm as error:
+        if str(error)[:3] in UNAVAILABLE_VERIFICATION_CODES:
+            return False
+        raise
+    with source.open("rb") as file:
+        return remote_hash.digest() == hashlib.file_digest(file, "sha256").digest()
+
+
+def upload_file(ftp, available, destination, source, size, resume):
+    if resume and remote_matches(ftp, destination.as_posix(), source, size):
+        return True
+    ensure_directory(ftp, destination.parent, available)
+    with source.open("rb") as file:
+        ftp.storbinary(f"STOR {destination.as_posix()}", file)
+    return False
+
+
+def upload_packages(session, package, app, public, *, resume=False):
     publish_last = tuple(map(PurePosixPath, PUBLIC_PUBLISH_LAST))
     public = [path for path in public if path not in publish_last] + [
         path for path in publish_last if path in public
     ]
+    transfers = []
     for local, remote, files in (("app", REMOTE_APP, app), ("public", REMOTE_PUBLIC, public)):
         for relative in files:
-            destination = remote / relative
-            ensure_directory(ftp, destination.parent, available)
-            with (package / local / relative).open("rb") as source:
-                ftp.storbinary(f"STOR {destination.as_posix()}", source)
-        print(f"Uploaded {len(files)} files to {remote}.")
+            source = package / local / relative
+            transfers.append((remote / relative, source, source.stat().st_size))
+
+    with Progress(len(transfers), sum(size for _, _, size in transfers)) as progress:
+        # Provision runtime directories without uploading any of their contents.
+        for directory in RUNTIME_DIRECTORIES:
+            session.run(lambda ftp, available: ensure_directory(ftp, REMOTE_APP / directory, available))
+        for destination, source, size in transfers:
+            verified = session.run(lambda ftp, available: upload_file(ftp, available, destination, source, size, resume))
+            progress.complete_file(size, verified)
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("package", nargs="?", type=Path, default=Path("deploy"))
+    parser.add_argument("--resume", action="store_true", help="Skip files only after verifying their remote content")
     args = parser.parse_args()
 
     try:
@@ -144,18 +304,13 @@ def main():
         context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
         context.load_default_certs(ssl.Purpose.SERVER_AUTH)
         context.minimum_version = ssl.TLSVersion.TLSv1_2
-        with ftplib.FTP_TLS(context=context, timeout=30) as ftp:
-            ftp.connect(server, port=21)
-            ftp.auth()
-            ftp.login(username, password)
-            ftp.prot_p()
-            ftp.set_pasv(True)
-            upload_packages(ftp, args.package, app, public)
+        with FTPSession(context, server, username, password) as session:
+            upload_packages(session, args.package, app, public, resume=args.resume)
     except ssl.SSLCertVerificationError:
         raise SystemExit("Deployment failed: FTPS certificate or hostname verification failed.") from None
     except ssl.SSLError:
         raise SystemExit("Deployment failed: FTPS TLS handshake or transfer failed.") from None
-    except (ValueError, OSError, EOFError, ftplib.Error):
+    except FTP_ERRORS:
         # Server replies may echo login details, so keep them out of the workflow log.
         raise SystemExit("Deployment failed: FTPS connection, login or transfer failed.") from None
 
