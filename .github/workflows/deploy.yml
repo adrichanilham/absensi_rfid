@@ -2,6 +2,8 @@
 name: Laravel 13 CI/CD - InfinityFree
 
 on:
+  pull_request:
+    branches: [main]
   push:
     branches: [main]
   workflow_dispatch:
@@ -10,16 +12,18 @@ permissions:
   contents: read
 
 concurrency:
-  group: infinityfree-production
+  group: ${{ github.event_name == 'push' && 'infinityfree-production' || format('siabsen-validation-{0}', github.run_id) }}
   cancel-in-progress: false
 
 jobs:
-  build-and-deploy:
+  validate:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Setup PHP 8.3
         uses: shivammathur/setup-php@v2
@@ -67,70 +71,47 @@ jobs:
 
           composer dump-autoload --no-dev
 
-      - name: Prepare and validate FTP packages
+      - name: Prepare and validate deployment packages
         run: |
-          python3 .github/scripts/package-deploy.py
+          python3 -B .github/scripts/package-deploy.py
           php -l deploy/public/index.php
 
-      - name: Deploy private Laravel application
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftp
-          port: 21
-          local-dir: ./deploy/app/
-          server-dir: /htdocs/laravel_app/
-          # Start a new sync history for the split deployment packages.
-          state-name: .ftp-deploy-laravel-app-state.json
-          dangerous-clean-slate: false
-          exclude: |
-            **/.git*
-            **/.git*/**
-            **/node_modules/**
-            **/.env
-            **/.env.*
-            **/auth.json
-            **/*.sqlite
-            **/*.sqlite-*
-            **/*.sqlite3
-            **/*.sqlite3-*
-            **/*.key
-            storage/app/private/**/*
-            storage/app/public/**/*
-            storage/framework/cache/data/**/*
-            storage/framework/sessions/**/*
-            storage/framework/views/**/*
-            storage/framework/down
-            storage/framework/maintenance.php
-            storage/logs/**/*
+      - name: Test deployment file protection
+        run: python3 -B -m unittest discover -s .github/scripts -v
 
-      - name: Deploy public web files
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
+      - name: Archive validated packages
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: tar -czf "$RUNNER_TEMP/deploy.tar.gz" deploy .github/scripts/deploy_ftp.py
+
+      - name: Upload validated packages
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
         with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftp
-          port: 21
-          local-dir: ./deploy/public/
-          server-dir: /htdocs/
-          state-name: .ftp-deploy-public-state.json
-          dangerous-clean-slate: false
-          exclude: |
-            **/.git*
-            **/.git*/**
-            **/node_modules/**
-            **/.env
-            **/.env.*
-            **/auth.json
-            **/*.sqlite
-            **/*.sqlite-*
-            **/*.sqlite3
-            **/*.sqlite3-*
-            **/*.key
-            laravel_app/
-            laravel_app/**
-            storage/
-            storage/**
+          name: infinityfree-deploy
+          path: ${{ runner.temp }}/deploy.tar.gz
+          if-no-files-found: error
+          compression-level: 0
+          overwrite: true
+
+  deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: validate
+    environment: production
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download validated packages
+        uses: actions/download-artifact@v4
+        with:
+          name: infinityfree-deploy
+          path: ${{ runner.temp }}/infinityfree-deploy
+
+      - name: Extract validated packages
+        run: tar -xzf "$RUNNER_TEMP/infinityfree-deploy/deploy.tar.gz"
+
+      - name: Upload application and public files over explicit FTPS
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+        run: python3 -B .github/scripts/deploy_ftp.py

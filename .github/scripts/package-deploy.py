@@ -3,21 +3,43 @@ import json
 import re
 import shutil
 import struct
-from pathlib import Path
+from pathlib import Path, PurePosixPath
+
+from deploy_ftp import (
+    APP_DIRECTORIES,
+    DATABASE_DIRECTORIES,
+    PUBLIC_FILES,
+    deployment_files,
+    excluded_name,
+    package_files,
+    public_file_allowed,
+)
 
 
-def private_file(name):
-    return (
-        name == ".env"
-        or name.startswith(".env.")
-        or name in {"auth.json", "composer.json", "composer.lock"}
-        or name.endswith((".sqlite", ".sqlite3", ".key"))
-    )
+def ignore_private_files(source, names):
+    return [
+        name for name in names
+        if excluded_name(name) or (Path(source) == Path("bootstrap") and name.lower() == "cache")
+    ]
+
+
+def copy_file(source, destination):
+    if any(path.is_symlink() for path in (source, *source.parents)):
+        raise SystemExit(f"Unexpected symbolic link in deployment source: {source}")
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(source, destination)
 
 
 def require_file(path):
     if not path.is_file() or path.stat().st_size == 0:
         raise SystemExit(f"Missing or empty deployment file: {path}")
+
+
+def workbox_file(worker):
+    workbox = re.search(r'"\./(workbox-[\w-]+)"', worker)
+    if workbox is None:
+        raise SystemExit("Unable to determine the Workbox file from sw.js")
+    return f"{workbox[1]}.js"
 
 
 def validate_pwa(public):
@@ -26,6 +48,13 @@ def validate_pwa(public):
 
     if (public / "build/manifest.webmanifest").exists():
         raise SystemExit("Duplicate PWA manifest under build/")
+
+    vite_manifest = json.loads((public / "build/manifest.json").read_text(encoding="utf-8"))
+    for entry in vite_manifest.values():
+        for asset in (entry["file"], *entry.get("css", []), *entry.get("assets", [])):
+            path = PurePosixPath("build") / asset
+            if ".." in path.parts or not public_file_allowed(path) or not (public / path).is_file():
+                raise SystemExit(f"Invalid Vite asset path: {asset}")
 
     manifest = json.loads((public / "manifest.webmanifest").read_text(encoding="utf-8"))
     if (manifest["start_url"], manifest["scope"], manifest["display"]) != ("/", "/", "standalone"):
@@ -52,10 +81,8 @@ def validate_pwa(public):
             raise SystemExit(f"Invalid deployment icon: {icon['src']}")
 
     worker = (public / "sw.js").read_text(encoding="utf-8")
-    workbox = re.search(r'"\./(workbox-[\w-]+)"', worker)
-    if workbox is None:
-        raise SystemExit("Unable to determine the Workbox file from sw.js")
-    require_file(public / f"{workbox[1]}.js")
+    workbox = workbox_file(worker)
+    require_file(public / workbox)
 
     precache = re.findall(r'\burl:\s*"([^"]+)"', worker)
     if not precache or len(precache) != len(set(precache)):
@@ -68,7 +95,7 @@ def validate_pwa(public):
             raise SystemExit(f"Unexpected Workbox precache URL: {url}")
         if {"..", "."}.intersection(asset.split("/")) or not (public / asset).is_file():
             raise SystemExit(f"Invalid Workbox precache path: {url}")
-    print(f"Validated {len(precache)} precache URLs, {workbox[1]}.js and {len(icons)} PWA icons.")
+    print(f"Validated {len(precache)} precache URLs, {workbox} and {len(icons)} PWA icons.")
 
 
 def main():
@@ -79,26 +106,24 @@ def main():
     app, public = output / "app", output / "public"
     app.mkdir()
 
-    for directory in ("app", "bootstrap", "config", "database", "resources", "routes", "vendor"):
-        shutil.copytree(directory, app / directory, ignore=shutil.ignore_patterns(
-            ".env", ".env.*", "auth.json", "*.sqlite", "*.sqlite3", "database.sqlite-*"
-        ))
+    for directory in (*APP_DIRECTORIES, *(f"database/{name}" for name in DATABASE_DIRECTORIES)):
+        source = Path(directory)
+        if any(path.is_symlink() for path in (source, *source.parents)):
+            raise SystemExit(f"Unexpected symbolic link in deployment source: {source}")
+        shutil.copytree(source, app / directory, symlinks=True, ignore=ignore_private_files)
     for file in ("artisan", "composer.json", "composer.lock"):
-        shutil.copy2(file, app / file)
-    for directory in ("bootstrap/cache", "storage/app/private", "storage/app/public",
-                      "storage/framework/cache/data", "storage/framework/sessions",
-                      "storage/framework/views", "storage/logs"):
-        (app / directory).mkdir(parents=True, exist_ok=True)
-    for file in (app / "bootstrap/cache").glob("*.php"):
-        file.unlink()
+        copy_file(Path(file), app / file)
     (app / ".htaccess").write_text("Require all denied\n", encoding="utf-8")
 
-    shutil.copytree("public", public, symlinks=True, ignore=shutil.ignore_patterns(
-        "hot", "fonts-manifest.dev.json", "storage"
-    ))
-    for path in public.rglob("*"):
-        if path.is_symlink() or private_file(path.name.lower()) or path.name.lower() == "laravel_app":
-            raise SystemExit(f"Unexpected file or directory in public deployment package: {path}")
+    public_source = Path("public")
+    for file in PUBLIC_FILES:
+        copy_file(public_source / file, public / file)
+    worker = (public / "sw.js").read_text(encoding="utf-8")
+    workbox = workbox_file(worker)
+    copy_file(public_source / workbox, public / workbox)
+    build = PurePosixPath("build")
+    for file in package_files(public_source / build, lambda path: public_file_allowed(build / path)):
+        copy_file(public_source / build / file, public / build / file)
 
     index = public / "index.php"
     entrypoint = index.read_text(encoding="utf-8")
@@ -116,6 +141,7 @@ def main():
     )
 
     validate_pwa(public)
+    deployment_files(output)
 
 
 if __name__ == "__main__":
