@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Absensi RFID SDN 37 Sungai Bangek</title>
 
+    @include('layouts.pwa')
+
     <style>
         * {
             box-sizing: border-box;

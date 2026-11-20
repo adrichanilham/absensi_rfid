@@ -25,7 +25,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: "8.3"
-          extensions: mbstring, pdo_mysql, pdo_sqlite, sqlite3, dom, curl, fileinfo, openssl
+          extensions: mbstring, pdo_mysql, pdo_sqlite, sqlite3, dom, curl, fileinfo, openssl, zip
           coverage: none
 
       - name: Setup Node.js
@@ -67,82 +67,46 @@ jobs:
 
           composer dump-autoload --no-dev
 
-      - name: Prepare deployment package
+      - name: Prepare and validate FTP packages
         run: |
-          mkdir -p deploy/app deploy/public
+          python3 .github/scripts/package-deploy.py
+          php -l deploy/public/index.php
 
-          # Salin aplikasi Laravel tanpa file public dan .env
-          rsync -a ./ deploy/app/ \
-            --exclude='.git/' \
-            --exclude='.github/' \
-            --exclude='.env' \
-            --exclude='.env.*' \
-            --exclude='!.env.example' \
-            --exclude='node_modules/' \
-            --exclude='tests/' \
-            --exclude='public/' \
-            --exclude='deploy/' \
-            --exclude='database/database.sqlite' \
-            --exclude='storage/logs/*' \
-            --exclude='storage/framework/cache/data/*' \
-            --exclude='storage/framework/sessions/*' \
-            --exclude='storage/framework/views/*'
+      - name: Deploy private Laravel application
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftp
+          port: 21
+          local-dir: ./deploy/app/
+          server-dir: /htdocs/laravel_app/
+          # Start a new sync history for the split deployment packages.
+          state-name: .ftp-deploy-laravel-app-state.json
+          dangerous-clean-slate: false
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/.env
+            **/.env.*
+            **/auth.json
+            **/*.sqlite
+            **/*.sqlite-*
+            **/*.sqlite3
+            **/*.sqlite3-*
+            **/*.key
+            storage/app/private/**/*
+            storage/app/public/**/*
+            storage/framework/cache/data/**/*
+            storage/framework/sessions/**/*
+            storage/framework/views/**/*
+            storage/framework/down
+            storage/framework/maintenance.php
+            storage/logs/**/*
 
-          find deploy/app/bootstrap/cache -type f \
-            ! -name '.gitignore' -delete
-
-          mkdir -p deploy/app/storage/framework/cache/data
-          mkdir -p deploy/app/storage/framework/sessions
-          mkdir -p deploy/app/storage/framework/views
-          mkdir -p deploy/app/storage/logs
-
-          # Salin file publik Laravel ke root htdocs
-          rsync -a public/ deploy/public/
-
-          # Letakkan aplikasi Laravel di dalam htdocs/laravel_app
-          mkdir -p deploy/public/laravel_app
-          rsync -a deploy/app/ deploy/public/laravel_app/
-
-          # Ubah path pada public/index.php
-          python3 - <<'PY'
-          from pathlib import Path
-
-          p = Path("deploy/public/index.php")
-          s = p.read_text()
-
-          s = s.replace(
-              "__DIR__.'/../storage/",
-              "__DIR__.'/laravel_app/storage/"
-          )
-          s = s.replace(
-              "__DIR__.'/../vendor/",
-              "__DIR__.'/laravel_app/vendor/"
-          )
-          s = s.replace(
-              "__DIR__.'/../bootstrap/",
-              "__DIR__.'/laravel_app/bootstrap/"
-          )
-
-          p.write_text(s)
-          PY
-
-          # Lindungi seluruh file aplikasi Laravel dari akses web langsung
-          cat > deploy/public/laravel_app/.htaccess <<'HTACCESS'
-          <IfModule mod_authz_core.c>
-              Require all denied
-          </IfModule>
-          <IfModule !mod_authz_core.c>
-              Order allow,deny
-              Deny from all
-          </IfModule>
-          HTACCESS
-
-          # Pastikan .env tidak ikut terunggah
-          test ! -e deploy/public/.env
-          test ! -e deploy/public/laravel_app/.env
-          test ! -e deploy/public/laravel_app/composer.json || true
-
-      - name: Deploy to InfinityFree
+      - name: Deploy public web files
         uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
           server: ${{ secrets.FTP_SERVER }}
@@ -152,4 +116,21 @@ jobs:
           port: 21
           local-dir: ./deploy/public/
           server-dir: /htdocs/
+          state-name: .ftp-deploy-public-state.json
           dangerous-clean-slate: false
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/.env
+            **/.env.*
+            **/auth.json
+            **/*.sqlite
+            **/*.sqlite-*
+            **/*.sqlite3
+            **/*.sqlite3-*
+            **/*.key
+            laravel_app/
+            laravel_app/**
+            storage/
+            storage/**

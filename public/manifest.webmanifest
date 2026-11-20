@@ -1,0 +1,31 @@
+{
+  "name": "SIABSEN SDN 37 Sungai Bangek",
+  "short_name": "SIABSEN",
+  "description": "Sistem Informasi Absensi Siswa Berbasis RFID SDN 37 Sungai Bangek",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#b80012",
+  "lang": "id",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
