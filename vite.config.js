@@ -1,7 +1,9 @@
+
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
 import { bunny } from 'laravel-vite-plugin/fonts';
 import tailwindcss from '@tailwindcss/vite';
+import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
     plugins: [
@@ -14,8 +16,24 @@ export default defineConfig({
                 }),
             ],
         }),
+
         tailwindcss(),
+
+        VitePWA({
+            injectRegister: false,
+            outDir: 'public',
+            scope: '/',
+            manifest: false,
+            workbox: {
+                globPatterns: [
+                    'build/assets/**/*.{js,css,woff2}',
+                    'pwa-{192x192,512x512,maskable-512x512}.png',
+                ],
+                navigateFallback: null,
+            },
+        }),
     ],
+
     server: {
         watch: {
             ignored: ['**/storage/framework/views/**'],
