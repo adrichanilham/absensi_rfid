@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -8,35 +7,46 @@
 
     @include('layouts.pwa')
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
     <style>
+        :root {
+            --font-main: 'Plus Jakarta Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            --maroon: #850000;
+            --maroon-dark: #680000;
+            --sidebar-width: 245px;
+            --bg-page: #f4f6f8;
+            --text: #1f2937;
+            --muted: #6b7280;
+            --border: #e5e7eb;
+        }
+
         * {
             box-sizing: border-box;
         }
 
-        :root {
-            --maroon: #850000;
-            --maroon-dark: #700000;
-            --pink-menu: #bd9292;
-            --pink-hover: #d0a5a5;
-            --sidebar-width: 235px;
-            --text: #292929;
-            --muted: #777;
-            --border: #e5e5e5;
-        }
-
         body {
             margin: 0;
-            font-family: Arial, sans-serif;
+            font-family: var(--font-main);
             color: var(--text);
-            background: #f5f5f5;
+            background: var(--bg-page);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        h1, h2, h3, h4,
+        input, select, textarea, button,
+        .rfid-page-title, .rfid-card-banner h2,
+        .izin-page-title, .izin-card-banner h2 {
+            font-family: var(--font-main) !important;
         }
 
         .app {
             display: flex;
             min-height: 100vh;
         }
-
-        /* ================= SIDEBAR ================= */
 
         .sidebar {
             width: var(--sidebar-width);
@@ -48,13 +58,14 @@
             overflow-y: auto;
             overflow-x: hidden;
             background: var(--maroon);
-            color: white;
-            padding: 12px 12px 14px;
+            color: #ffffff;
+            padding: 16px 14px;
             display: flex;
             flex-direction: column;
-            transition: margin-left .3s ease;
+            transition: margin-left 0.3s ease;
             z-index: 100;
             flex-shrink: 0;
+            box-shadow: 2px 0 12px rgba(0, 0, 0, 0.08);
         }
 
         .sidebar::-webkit-scrollbar {
@@ -62,55 +73,64 @@
         }
 
         .sidebar::-webkit-scrollbar-thumb {
-            background: rgba(255,255,255,.3);
+            background: rgba(255, 255, 255, 0.25);
             border-radius: 10px;
         }
 
         .brand {
             display: flex;
             align-items: center;
-            gap: 8px;
-            padding: 5px 2px 15px;
-            border-bottom: 1px solid rgba(255,255,255,.25);
-            margin-bottom: 12px;
+            gap: 11px;
+            padding: 4px 6px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+            margin-bottom: 14px;
         }
 
         .brand-icon {
-            font-size: 30px;
+            font-size: 26px;
             line-height: 1;
+            background: rgba(255, 255, 255, 0.12);
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
         }
 
         .brand h2 {
-            font-family: Georgia, serif;
             font-size: 14px;
-            line-height: 1.3;
+            line-height: 1.35;
             margin: 0;
-            font-weight: bold;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            color: #ffffff;
         }
 
         .nav-label {
-            color: #e5baba;
-            font-size: 10px;
+            color: rgba(255, 255, 255, 0.65);
+            font-size: 10.5px;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: .6px;
+            letter-spacing: 0.08em;
             padding: 0 10px;
-            margin: 10px 0 6px;
+            margin: 14px 0 6px;
         }
 
         .nav-link {
             display: flex;
             align-items: center;
-            gap: 9px;
-            color: #f7e3e3;
+            gap: 10px;
+            color: #fce8e8;
             text-decoration: none;
-            padding: 8px 11px;
+            padding: 9px 12px;
             border-radius: 8px;
             margin: 3px 0;
-            font-family: Georgia, serif;
             font-size: 13px;
-            font-weight: bold;
-            background: var(--pink-menu);
-            transition: .2s;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.08);
+            transition: all 0.18s ease;
         }
 
         .nav-icon {
@@ -118,56 +138,61 @@
             min-width: 20px;
             text-align: center;
             font-size: 15px;
+            opacity: 0.9;
         }
 
         .nav-link:hover {
-            background: var(--pink-hover);
-            color: white;
+            background: rgba(255, 255, 255, 0.18);
+            color: #ffffff;
             transform: translateX(2px);
         }
 
         .nav-link.active {
-            background: #898383;
-            color: white;
+            background: #ffffff;
+            color: var(--maroon);
+            font-weight: 700;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
         }
 
-        /* ================= PANEL RFID ================= */
+        .nav-link.active .nav-icon {
+            opacity: 1;
+        }
 
         .sidebar-bottom {
             margin-top: auto;
-            padding-top: 15px;
+            padding-top: 14px;
+            border-top: 1px solid rgba(255, 255, 255, 0.14);
+        }
+
+        .scan-rfid-btn {
             display: flex;
+            align-items: center;
             justify-content: center;
-        }
-
-        .rfid-panel {
-            width: 125px;
-            padding: 11px 9px;
-            background: #a14b4b;
-            border-radius: 8px;
-            text-align: center;
-            color: white;
-        }
-
-        .rfid-panel h3 {
-            font-family: Georgia, serif;
-            font-size: 13px;
-            margin: 0 0 8px;
-        }
-
-        .rfid-panel a {
-            display: block;
-            color: #fff;
+            gap: 9px;
+            width: 100%;
+            padding: 10px 14px;
+            background: #ffffff;
+            color: var(--maroon);
             text-decoration: none;
-            font-size: 11px;
-            margin-top: 6px;
+            font-size: 13px;
+            font-weight: 700;
+            border-radius: 8px;
+            transition: background 0.18s ease, transform 0.15s ease;
         }
 
-        .rfid-panel a:hover {
-            text-decoration: underline;
+        .scan-rfid-btn svg {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
         }
 
-        /* ================= AREA KONTEN ================= */
+        .scan-rfid-btn:hover {
+            background: #fdf2f2;
+        }
+
+        .scan-rfid-btn:active {
+            transform: scale(0.98);
+        }
 
         .main-area {
             flex: 1;
@@ -176,13 +201,11 @@
             flex-direction: column;
         }
 
-        /* ================= HEADER ================= */
-
         .topbar {
-            min-height: 78px;
-            background: white;
-            border-bottom: 1px solid #ddd;
-            padding: 12px 22px;
+            min-height: 70px;
+            background: #ffffff;
+            border-bottom: 1px solid var(--border);
+            padding: 12px 24px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -195,33 +218,42 @@
         .topbar-left {
             display: flex;
             align-items: center;
-            gap: 18px;
+            gap: 14px;
             min-width: 0;
         }
 
         .menu-toggle {
-            border: none;
+            border: 1px solid transparent;
             background: transparent;
-            color: #111;
-            font-size: 28px;
+            color: #374151;
+            font-size: 22px;
             line-height: 1;
             cursor: pointer;
-            padding: 3px;
+            width: 38px;
+            height: 38px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             flex-shrink: 0;
+            transition: background 0.15s, color 0.15s;
         }
 
         .menu-toggle:hover {
+            background: #fdf2f2;
             color: var(--maroon);
         }
 
         .topbar h1 {
-            font-family: Georgia, serif;
-            font-size: 21px;
+            font-size: 19px;
+            font-weight: 700;
+            letter-spacing: -0.015em;
             margin: 0;
-            color: #252525;
+            color: #111827;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
-
-        /* ================= INFORMASI AKUN ================= */
 
         .user-info {
             display: flex;
@@ -232,18 +264,19 @@
         }
 
         .user-avatar {
-            width: 42px;
-            height: 42px;
-            min-width: 42px;
+            width: 38px;
+            height: 38px;
+            min-width: 38px;
             border-radius: 50%;
             background: var(--maroon);
-            color: white;
+            color: #ffffff;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 17px;
-            font-weight: bold;
+            font-size: 15px;
+            font-weight: 700;
             text-transform: uppercase;
+            box-shadow: 0 2px 6px rgba(133, 0, 0, 0.2);
         }
 
         .user-detail {
@@ -251,27 +284,24 @@
             flex-direction: column;
             justify-content: center;
             align-items: flex-start;
-            min-width: 85px;
+            min-width: 80px;
             text-align: left;
-            line-height: 1.4;
+            line-height: 1.3;
         }
 
         .user-detail p {
             margin: 0;
-            color: #292929;
+            color: #1f2937;
             font-size: 13px;
-            font-weight: bold;
+            font-weight: 700;
         }
 
         .user-detail small {
             display: block;
-            margin-top: 2px;
+            margin-top: 1px;
             color: var(--muted);
-            font-size: 11px;
-        }
-
-        .user-chevron {
-            display: none;
+            font-size: 11.5px;
+            font-weight: 500;
         }
 
         .user-info form {
@@ -279,66 +309,72 @@
         }
 
         .logout-button {
-            border: 1px solid #e5dada;
-            background: white;
+            border: 1px solid #e5d5d5;
+            background: #ffffff;
             color: var(--maroon);
-            padding: 9px 15px;
-            border-radius: 7px;
+            padding: 8px 14px;
+            border-radius: 8px;
             cursor: pointer;
-            font-weight: bold;
-            font-size: 12px;
+            font-weight: 600;
+            font-size: 12.5px;
             white-space: nowrap;
-            transition: .2s;
+            transition: all 0.15s ease;
         }
 
         .logout-button:hover {
-            background: #fff1f1;
+            background: #fef2f2;
             border-color: var(--maroon);
         }
-
-        /* ================= KONTEN HALAMAN ================= */
 
         .content {
             flex: 1;
             width: 100%;
-            padding: 24px;
-            max-width: 1600px;
+            padding: 26px 24px;
+            max-width: 1560px;
             margin: 0 auto;
-            background: #fff;
+            background: transparent;
         }
 
         .alert {
-            padding: 12px 15px;
+            padding: 13px 16px;
             border-radius: 8px;
-            margin-bottom: 16px;
+            margin-bottom: 18px;
             font-size: 13px;
+            font-weight: 500;
+            line-height: 1.5;
         }
 
         .alert-success {
-            background: #dcfce7;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-left: 4px solid #16a34a;
             color: #166534;
         }
 
         .alert-error {
-            background: #fee2e2;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-left: 4px solid #dc2626;
             color: #991b1b;
+        }
+
+        .alert ul {
+            margin: 6px 0 0;
+            padding-left: 18px;
         }
 
         footer {
             text-align: center;
-            color: #888;
-            font-size: 11px;
-            padding: 13px;
-            background: white;
+            color: var(--muted);
+            font-size: 12px;
+            padding: 16px;
+            background: #ffffff;
+            border-top: 1px solid var(--border);
         }
-
-        /* ================= SIDEBAR COLLAPSE ================= */
 
         .app.sidebar-hidden .sidebar {
             margin-left: calc(var(--sidebar-width) * -1);
         }
-
-        /* ================= RESPONSIVE ================= */
 
         @media (max-width: 800px) {
             .sidebar {
@@ -346,8 +382,6 @@
                 top: 0;
                 left: 0;
                 height: 100vh;
-                min-height: 100vh;
-                overflow-y: auto;
                 margin-left: 0;
             }
 
@@ -360,8 +394,8 @@
             }
 
             .topbar {
-                min-height: 70px;
-                padding: 12px 15px;
+                min-height: 64px;
+                padding: 10px 16px;
             }
 
             .topbar-left {
@@ -369,29 +403,29 @@
             }
 
             .topbar h1 {
-                font-size: 18px;
+                font-size: 17px;
             }
 
             .content {
-                padding: 16px 13px;
+                padding: 18px 14px;
             }
 
             .user-avatar {
-                width: 36px;
-                height: 36px;
-                min-width: 36px;
-                font-size: 14px;
+                width: 34px;
+                height: 34px;
+                min-width: 34px;
+                font-size: 13px;
             }
         }
 
         @media (max-width: 480px) {
             .topbar {
                 gap: 8px;
-                padding: 10px;
+                padding: 10px 12px;
             }
 
             .topbar-left {
-                gap: 7px;
+                gap: 6px;
             }
 
             .topbar h1 {
@@ -399,17 +433,19 @@
             }
 
             .menu-toggle {
-                font-size: 23px;
+                width: 34px;
+                height: 34px;
+                font-size: 20px;
             }
 
             .user-info {
-                gap: 7px;
+                gap: 8px;
             }
 
             .user-avatar {
-                width: 32px;
-                height: 32px;
-                min-width: 32px;
+                width: 30px;
+                height: 30px;
+                min-width: 30px;
                 font-size: 12px;
             }
 
@@ -418,29 +454,27 @@
             }
 
             .user-detail p {
-                font-size: 10px;
+                font-size: 11px;
             }
 
             .user-detail small {
-                font-size: 9px;
-            }
-
-            .logout-button {
-                padding: 7px 9px;
                 font-size: 10px;
             }
 
+            .logout-button {
+                padding: 6px 10px;
+                font-size: 11px;
+            }
+
             .content {
-                padding: 14px 11px;
+                padding: 14px 12px;
             }
         }
 
-        /* ================= LAYAR PENDEK ================= */
-
         @media (min-width: 801px) and (max-height: 750px) {
             .sidebar {
-                padding-top: 9px;
-                padding-bottom: 9px;
+                padding-top: 10px;
+                padding-bottom: 10px;
             }
 
             .brand {
@@ -449,21 +483,22 @@
             }
 
             .nav-label {
-                margin: 7px 0 4px;
+                margin: 8px 0 4px;
             }
 
             .nav-link {
-                padding: 6px 10px;
+                padding: 7px 10px;
                 margin: 2px 0;
-                font-size: 12px;
+                font-size: 12.5px;
             }
 
             .sidebar-bottom {
-                padding-top: 8px;
+                padding-top: 10px;
             }
 
-            .rfid-panel {
-                padding: 8px;
+            .scan-rfid-btn {
+                padding: 9px 12px;
+                font-size: 12.5px;
             }
         }
     </style>
@@ -536,21 +571,11 @@
             </a>
 
             @if ($role === 'operator')
-
-                <div class="nav-label">Perangkat & Absensi</div>
-
                 <a class="nav-link {{ request()->routeIs('rfid.*') ? 'active' : '' }}"
                    href="{{ route('rfid.index') }}">
                     <span class="nav-icon">▧</span>
                     Data RFID
                 </a>
-
-                <a class="nav-link {{ request()->routeIs('absensi.scan') ? 'active' : '' }}"
-                   href="{{ route('absensi.scan') }}">
-                    <span class="nav-icon">▥</span>
-                    Scan RFID
-                </a>
-
             @endif
 
             <a class="nav-link {{ request()->routeIs('laporan.absensi') ? 'active' : '' }}"
@@ -581,17 +606,15 @@
 
         @if ($role === 'operator')
             <div class="sidebar-bottom">
-                <div class="rfid-panel">
-                    <h3>RFID</h3>
-
-                    <a href="{{ route('rfid.index') }}">
-                        ▸ Data Perangkat
-                    </a>
-
-                    <a href="{{ route('absensi.scan') }}">
-                        ▸ Scan RFID
-                    </a>
-                </div>
+                <a href="{{ route('absensi.scan') }}" class="scan-rfid-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="5" width="14" height="14" rx="2.5" />
+                        <line x1="2" y1="10" x2="16" y2="10" />
+                        <path d="M19 9.5a4 4 0 0 1 0 5" />
+                        <path d="M21.5 7a7.5 7.5 0 0 1 0 10" />
+                    </svg>
+                    <span>Lakukan Scan RFID</span>
+                </a>
             </div>
         @endif
 
@@ -670,8 +693,7 @@
         </main>
 
         <footer>
-            Sistem Informasi Absensi Siswa Berbasis RFID
-            &copy; {{ date('Y') }} - SDN 37 Sungai Bangek
+            Sistem Informasi Absensi Siswa Berbasis RFID &copy; {{ date('Y') }} — SDN 37 Sungai Bangek
         </footer>
 
     </div>

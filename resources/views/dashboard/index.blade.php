@@ -1,4 +1,3 @@
-
 @extends('layouts.app')
 
 @section('title', 'Dashboard - Absensi RFID')
@@ -18,178 +17,182 @@
     ];
 
     $greeting = $roleGreetings[$user->role] ?? 'Selamat Datang!';
+    $tanggalIndonesia = \Carbon\Carbon::parse($hariIni)->locale('id')->translatedFormat('l, d F Y');
 @endphp
 
 <style>
     .rfid-dashboard {
-        font-family: Georgia, 'Times New Roman', serif;
-        color: #242424;
-        padding: 2px 2px 12px;
+        font-family: 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
+        color: #1f2937;
     }
+
+    /* ================= HEADER SAMBUTAN & TANGGAL ================= */
 
     .rfid-welcome {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        gap: 12px;
+        gap: 16px;
         flex-wrap: wrap;
-        margin-bottom: 24px;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 18px 22px;
+        margin-bottom: 22px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
     }
 
     .rfid-welcome h2 {
         margin: 0 0 4px;
         color: #850000;
-        font-size: 18px;
-        font-weight: bold;
+        font-size: 19px;
+        font-weight: 700;
+        letter-spacing: -0.015em;
     }
 
     .rfid-welcome p {
         margin: 0;
-        color: #666;
-        font-size: 12px;
-        font-style: italic;
+        color: #6b7280;
+        font-size: 13px;
+        font-weight: 500;
     }
 
     .rfid-date {
         display: inline-flex;
         align-items: center;
-        gap: 7px;
-        padding: 8px 12px;
-        border-radius: 6px;
-        background: #850000;
-        color: white;
-        font-size: 12px;
-        font-weight: bold;
+        gap: 8px;
+        padding: 9px 15px;
+        border-radius: 8px;
+        background: #fdf2f2;
+        border: 1px solid #f5c6cb;
+        color: #850000;
+        font-size: 13px;
+        font-weight: 700;
         white-space: nowrap;
     }
 
-    .rfid-date-icon {
-        font-size: 16px;
+    .rfid-date svg {
+        width: 17px;
+        height: 17px;
+        flex-shrink: 0;
     }
+
+    /* ================= KARTU STATISTIK ================= */
 
     .rfid-statistics {
         display: grid;
         grid-template-columns: repeat(4, minmax(0, 1fr));
-        justify-content: center;
-        gap: 12px;
+        gap: 16px;
         width: 100%;
-        max-width: 680px;
-        margin: 0 auto 25px;
+        margin-bottom: 24px;
     }
 
     .rfid-stat-card {
-        width: 100%;
-        min-width: 0;
-        height: 100px;
-        padding: 10px;
-        border: 1px solid #dedede;
-        border-radius: 8px;
-        background: #fafafa;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, .10);
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        overflow: hidden;
-    }
-
-    .rfid-stat-top {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-left: 4px solid var(--stat-color);
+        border-radius: 12px;
+        padding: 18px 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
         display: flex;
         align-items: center;
-        gap: 7px;
+        gap: 15px;
         min-width: 0;
+        transition: transform 0.18s ease, box-shadow 0.18s ease;
     }
 
-    .rfid-avatar {
-        position: relative;
-        flex: 0 0 38px;
-        width: 38px;
-        height: 38px;
-        border-radius: 50%;
-        background: var(--stat-color);
+    .rfid-stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
     }
 
-    .rfid-avatar::before {
-        content: "";
-        position: absolute;
-        width: 14px;
-        height: 14px;
-        left: 12px;
-        top: 6px;
-        border-radius: 50%;
-        background: white;
+    .rfid-stat-icon {
+        width: 48px;
+        height: 48px;
+        min-width: 48px;
+        border-radius: 12px;
+        background: var(--stat-bg);
+        color: var(--stat-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
-    .rfid-avatar::after {
-        content: "";
-        position: absolute;
-        width: 26px;
-        height: 15px;
-        left: 6px;
-        bottom: 5px;
-        border-radius: 18px 18px 12px 12px;
-        background: white;
+    .rfid-stat-icon svg {
+        width: 24px;
+        height: 24px;
+        stroke-width: 2.1;
+    }
+
+    .rfid-stat-body {
+        min-width: 0;
+        flex: 1;
     }
 
     .rfid-stat-label {
-        flex: 1;
-        min-width: 0;
-        color: var(--stat-color);
-        font-size: 12px;
-        font-weight: bold;
-        line-height: 1.2;
-        overflow-wrap: anywhere;
+        color: #6b7280;
+        font-size: 12.5px;
+        font-weight: 600;
+        line-height: 1.3;
+        margin-bottom: 4px;
     }
 
     .rfid-stat-value {
         margin: 0;
-        text-align: center;
-        color: var(--stat-color);
-        font-size: 21px;
-        line-height: 1;
-        font-weight: bold;
+        color: #111827;
+        font-size: 26px;
+        font-weight: 800;
+        line-height: 1.1;
+        letter-spacing: -0.02em;
     }
 
     .rfid-total {
-        --stat-color: #050505;
+        --stat-color: #850000;
+        --stat-bg: #fdf2f2;
     }
 
     .rfid-hadir {
-        --stat-color: #32bd24;
+        --stat-color: #16a34a;
+        --stat-bg: #dcfce7;
     }
 
     .rfid-terlambat {
-        --stat-color: #e99419;
+        --stat-color: #d97706;
+        --stat-bg: #fef3c7;
     }
 
     .rfid-belum {
-        --stat-color: #d92720;
+        --stat-color: #dc2626;
+        --stat-bg: #fee2e2;
     }
 
+    /* ================= TABEL ABSENSI TERBARU ================= */
+
     .rfid-table-section {
-        margin-top: 0;
-        border: 1px solid #ddd;
-        border-radius: 7px;
-        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        background: #ffffff;
         overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
     }
 
     .rfid-table-heading {
-        padding: 11px 15px;
-        border-bottom: 1px solid #ddd;
+        padding: 15px 20px;
         background: #850000;
-        color: white;
+        color: #ffffff;
     }
 
     .rfid-table-heading h3 {
         margin: 0;
-        font-size: 15px;
-        font-weight: bold;
+        font-size: 15.5px;
+        font-weight: 700;
+        color: #ffffff;
     }
 
     .rfid-table-heading p {
         margin: 3px 0 0;
-        font-size: 10px;
-        color: #f3dada;
+        font-size: 12px;
+        color: #f3d1d1;
     }
 
     .rfid-table-wrapper {
@@ -201,27 +204,28 @@
         width: 100%;
         border-collapse: collapse;
         white-space: nowrap;
-        font-family: Arial, sans-serif;
+        font-family: inherit;
     }
 
     .rfid-table th {
-        padding: 9px 12px;
-        background: #f3eeee;
-        color: #650000;
-        font-size: 11px;
+        padding: 12px 16px;
+        background: #f9fafb;
+        border-bottom: 1px solid #e5e7eb;
+        color: #374151;
+        font-size: 12px;
+        font-weight: 700;
         text-align: left;
-        font-weight: bold;
     }
 
     .rfid-table td {
-        padding: 9px 12px;
-        border-bottom: 1px solid #eee;
-        color: #444;
-        font-size: 11px;
+        padding: 12px 16px;
+        border-bottom: 1px solid #f3f4f6;
+        color: #374151;
+        font-size: 13px;
     }
 
     .rfid-table tbody tr:hover {
-        background: #fff8f8;
+        background: #fdf8f8;
     }
 
     .rfid-table tbody tr:last-child td {
@@ -230,10 +234,10 @@
 
     .rfid-status {
         display: inline-block;
-        padding: 4px 8px;
-        border-radius: 4px;
-        font-size: 10px;
-        font-weight: bold;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 11.5px;
+        font-weight: 700;
         text-transform: capitalize;
     }
 
@@ -243,8 +247,8 @@
     }
 
     .rfid-status.status-terlambat {
-        background: #ffedd5;
-        color: #c2410c;
+        background: #fef3c7;
+        color: #b45309;
     }
 
     .rfid-status.status-izin {
@@ -254,7 +258,7 @@
 
     .rfid-status.status-sakit {
         background: #cffafe;
-        color: #0891b2;
+        color: #0e7490;
     }
 
     .rfid-status.status-alpa {
@@ -263,67 +267,72 @@
     }
 
     .rfid-status.status-default {
-        background: #eee;
-        color: #444;
+        background: #f3f4f6;
+        color: #4b5563;
     }
 
     .rfid-empty {
-        padding: 20px !important;
+        padding: 28px 16px !important;
         text-align: center;
-        color: #888 !important;
+        color: #6b7280 !important;
+        font-size: 13px;
     }
 
-    @media (max-width: 900px) {
-        .rfid-statistics {
-            grid-template-columns: repeat(2, minmax(130px, 160px));
-            max-width: 360px;
-            gap: 12px;
-        }
+    /* ================= RESPONSIVE ================= */
 
-        .rfid-stat-card {
-            height: 100px;
+    @media (max-width: 1024px) {
+        .rfid-statistics {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
         }
     }
 
     @media (max-width: 600px) {
-        .rfid-dashboard {
-            padding: 0;
-        }
-
         .rfid-welcome {
+            padding: 16px;
+            flex-direction: column;
             align-items: flex-start;
-            margin-bottom: 20px;
         }
 
         .rfid-welcome h2 {
-            font-size: 16px;
+            font-size: 17px;
         }
 
         .rfid-date {
-            font-size: 10px;
-            padding: 7px 9px;
+            font-size: 12px;
+            padding: 7px 12px;
         }
 
         .rfid-statistics {
             grid-template-columns: repeat(2, minmax(0, 1fr));
-            max-width: 340px;
             gap: 10px;
-            margin-bottom: 20px;
         }
 
         .rfid-stat-card {
-            height: 95px;
+            padding: 14px;
+            gap: 11px;
         }
 
-        .rfid-table-heading {
-            padding: 10px 12px;
+        .rfid-stat-icon {
+            width: 40px;
+            height: 40px;
+            min-width: 40px;
+            border-radius: 10px;
+        }
+
+        .rfid-stat-icon svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .rfid-stat-value {
+            font-size: 22px;
         }
     }
 
-    @media (max-width: 350px) {
+    @media (max-width: 380px) {
         .rfid-statistics {
             grid-template-columns: 1fr;
-            max-width: 180px;
         }
     }
 </style>
@@ -340,8 +349,13 @@
         </div>
 
         <div class="rfid-date">
-            <span class="rfid-date-icon">🗓️</span>
-            {{ $hariIni->translatedFormat('l, d F Y') }}
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            <span>{{ $tanggalIndonesia }}</span>
         </div>
     </div>
 
@@ -349,35 +363,59 @@
     <div class="rfid-statistics">
 
         <div class="rfid-stat-card rfid-total">
-            <div class="rfid-stat-top">
-                <div class="rfid-avatar"></div>
-                <div class="rfid-stat-label">Total Siswa</div>
+            <div class="rfid-stat-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
             </div>
-            <div class="rfid-stat-value">{{ $totalSiswa }}</div>
+            <div class="rfid-stat-body">
+                <div class="rfid-stat-label">Total Siswa</div>
+                <div class="rfid-stat-value">{{ $totalSiswa }}</div>
+            </div>
         </div>
 
         <div class="rfid-stat-card rfid-hadir">
-            <div class="rfid-stat-top">
-                <div class="rfid-avatar"></div>
-                <div class="rfid-stat-label">Hadir</div>
+            <div class="rfid-stat-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="8.5" cy="7" r="4"></circle>
+                    <polyline points="17 11 19 13 23 9"></polyline>
+                </svg>
             </div>
-            <div class="rfid-stat-value">{{ $hadirHariIni }}</div>
+            <div class="rfid-stat-body">
+                <div class="rfid-stat-label">Hadir</div>
+                <div class="rfid-stat-value">{{ $hadirHariIni }}</div>
+            </div>
         </div>
 
         <div class="rfid-stat-card rfid-terlambat">
-            <div class="rfid-stat-top">
-                <div class="rfid-avatar"></div>
-                <div class="rfid-stat-label">Terlambat</div>
+            <div class="rfid-stat-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
             </div>
-            <div class="rfid-stat-value">{{ $terlambatHariIni }}</div>
+            <div class="rfid-stat-body">
+                <div class="rfid-stat-label">Terlambat</div>
+                <div class="rfid-stat-value">{{ $terlambatHariIni }}</div>
+            </div>
         </div>
 
         <div class="rfid-stat-card rfid-belum">
-            <div class="rfid-stat-top">
-                <div class="rfid-avatar"></div>
-                <div class="rfid-stat-label">Belum Ada Catatan</div>
+            <div class="rfid-stat-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="8.5" cy="7" r="4"></circle>
+                    <line x1="23" y1="11" x2="17" y2="11"></line>
+                </svg>
             </div>
-            <div class="rfid-stat-value">{{ $belumAdaCatatan }}</div>
+            <div class="rfid-stat-body">
+                <div class="rfid-stat-label">Belum Ada Catatan</div>
+                <div class="rfid-stat-value">{{ $belumAdaCatatan }}</div>
+            </div>
         </div>
 
     </div>

@@ -1,11 +1,12 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Absensi RFID - SDN 37 Sungai Bangek</title>
-
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
     <style>
         * {
             box-sizing: border-box;
@@ -13,47 +14,60 @@
 
         body {
             margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f5f5f5;
-            color: #333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            background: #f3f4f6;
+            color: #1f2937;
         }
 
         header {
             background: #850000;
-            color: white;
-            padding: 17px 20px;
+            color: #ffffff;
+            padding: clamp(16px, 2.5vh, 24px) 20px;
             text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
         }
 
         header h1 {
-            margin: 0 0 5px;
-            font-family: Georgia, serif;
-            font-size: 21px;
+            font-family: 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
+            letter-spacing: 0.5px;
+            margin: 0 0 4px;
+            font-size: clamp(22px, 2.8vw, 32px);
         }
 
         header p {
             margin: 0;
-            color: #f2dede;
-            font-size: 11px;
+            color: #f8d7da;
+            font-size: clamp(13px, 1.4vw, 16px);
         }
 
         main {
-                width: min(1100px, 94%);
-                margin: 30px auto;
-
-                display: grid;
-                grid-template-columns: 1.5fr 1fr;
-                gap: 24px;
-                align-items: start;
+            flex: 1;
+            width: min(1240px, 94%);
+            margin: clamp(20px, 4vh, 40px) auto;
+            display: grid;
+            grid-template-columns: 1.1fr 1fr;
+            gap: clamp(20px, 2.5vw, 32px);
+            align-items: stretch;
         }
 
         .card {
-                background: white;
-                padding: 24px;
-                border: 1px solid #e8e5e5;
-                border-radius: 8px;
-                margin-bottom: 0;
-                min-width: 0;
+            background: #ffffff;
+            padding: clamp(24px, 3vw, 36px);
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-width: 0;
+        }
+
+        .result-card {
+            justify-content: flex-start;
         }
 
         .center {
@@ -61,53 +75,94 @@
         }
 
         .icon {
-            font-size: 43px;
-            margin: 4px 0 10px;
+            font-size: clamp(44px, 5vw, 60px);
+            margin-bottom: 8px;
+            line-height: 1;
         }
 
         h2 {
-            margin: 0 0 9px;
+            font-family: 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
+            letter-spacing: -0.015em;
+            margin: 0 0 8px;
             color: #850000;
-            font-family: Georgia, serif;
-            font-size: 17px;
+            font-size: clamp(20px, 2.2vw, 26px);
+        }
+
+        .subtitle {
+            margin: 0 0 18px;
+            color: #6b7280;
+            font-size: clamp(13px, 1.3vw, 15px);
+            line-height: 1.5;
+        }
+
+        /* Kotak Tanggal & Jam Digital Besar */
+        .clock-box {
+            background: #fdf2f2;
+            border: 1px solid #f5c6cb;
+            border-radius: 10px;
+            padding: clamp(14px, 2vh, 20px) 16px;
+            margin: 8px 0 22px;
+        }
+
+        #tanggal {
+            margin: 0 0 6px;
+            color: #850000;
+            font-size: clamp(14px, 1.5vw, 18px);
+            font-weight: 700;
+        }
+
+        #jam {
+            margin: 0;
+            color: #111827;
+            font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
+            font-size: clamp(30px, 4vw, 48px);
+            font-weight: 800;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: 1.5px;
+            line-height: 1.1;
         }
 
         label {
             display: block;
-            font-size: 11px;
-            font-weight: bold;
+            font-size: clamp(13px, 1.3vw, 15px);
+            font-weight: 700;
             text-align: left;
-            margin: 17px 0 7px;
-            color: #555;
+            margin: 0 0 8px;
+            color: #374151;
         }
 
         input {
             width: 100%;
-            padding: 11px 12px;
-            border: 1px solid #dedede;
-            border-radius: 5px;
-            font-size: 13px;
+            padding: clamp(12px, 1.6vh, 16px) 14px;
+            border: 2px solid #d1d5db;
+            border-radius: 8px;
+            font-size: clamp(15px, 1.5vw, 18px);
             outline: none;
-            color: #333;
-            background: #fff;
+            color: #111827;
+            background: #f9fafb;
+            caret-color: transparent;
+            user-select: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
 
         input:focus {
             border-color: #850000;
-            box-shadow: 0 0 0 2px #85000012;
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(133, 0, 0, 0.14);
         }
 
         button {
             width: 100%;
-            margin-top: 10px;
-            padding: 11px;
+            margin-top: 14px;
+            padding: clamp(13px, 1.7vh, 16px);
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             background: #850000;
-            color: white;
-            font-size: 12px;
-            font-weight: bold;
+            color: #ffffff;
+            font-size: clamp(14px, 1.4vw, 16px);
+            font-weight: 700;
             cursor: pointer;
+            transition: background 0.2s;
         }
 
         button:hover {
@@ -119,86 +174,87 @@
             cursor: wait;
         }
 
+        .helper-text {
+            margin: 14px 0 0;
+            color: #6b7280;
+            font-size: clamp(12px, 1.2vw, 13px);
+        }
+
         .result {
-            border-radius: 6px;
-            padding: 14px;
-            margin-top: 13px;
-            background: #fafafa;
-            border: 1px solid #e8e5e5;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border-radius: 10px;
+            padding: clamp(20px, 2.5vw, 28px);
+            margin-top: 12px;
+            background: #f9fafb;
+            border: 2px dashed #d1d5db;
             overflow-wrap: anywhere;
-            font-size: 12px;
+            font-size: clamp(14px, 1.4vw, 16px);
+            color: #6b7280;
+            text-align: center;
         }
 
         .result h3 {
-            margin: 0 0 9px;
-            font-size: 13px;
+            margin: 0 0 12px;
+            font-size: clamp(17px, 1.8vw, 21px);
         }
 
         .result p {
-            margin: 5px 0;
-            line-height: 1.5;
-        }
-
-        .success {
-            background: #f0faf3;
-            border-color: #cce8d5;
-            color: #267443;
-        }
-
-        .error {
-            background: #fff5f5;
-            border-color: #f0cccc;
-            color: #a52b2b;
-        }
-
-        .muted {
-            color: #888;
-            font-size: 10px;
+            margin: 6px 0;
             line-height: 1.6;
         }
 
+        .result.success {
+            background: #f0fdf4;
+            border: 2px solid #86efac;
+            color: #166534;
+            text-align: left;
+        }
+
+        .result.late,
+        .result.error {
+            background: #fef2f2;
+            border: 2px solid #fca5a5;
+            color: #b91c1c;
+            text-align: left;
+        }
+
+        .result.error {
+            text-align: center;
+        }
+
         .student-name {
-            font-size: 19px;
-            font-weight: bold;
-            margin: 10px 0;
-            color: #168044;
+            font-size: clamp(22px, 2.6vw, 30px);
+            font-weight: 800;
+            margin: 8px 0 12px;
+            color: #15803d;
         }
 
-        #tanggal {
-            margin: 13px 0 4px;
-            color: #850000;
-            font-size: 12px;
-            font-weight: bold;
+        .student-name.late {
+            color: #dc2626;
         }
 
-        #jam {
-            margin: 0;
+        .status-text {
+            font-weight: 700;
+            font-size: clamp(15px, 1.6vw, 18px);
+            margin-top: 10px;
         }
 
-        @media (max-width: 480px) {
-            main {
-                margin: 16px auto;
-            }
-
-            .card {
-                padding: 16px;
-            }
-
-            header h1 {
-                font-size: 19px;
-            }
+        .status-text.late {
+            color: #dc2626;
         }
 
-        /* Tampilan tablet dan HP */
-        @media (max-width: 768px) {
+        @media (max-width: 820px) {
             main {
                 grid-template-columns: 1fr;
                 width: 92%;
-                gap: 15px;
+                margin: 20px auto;
             }
-        
-            .card {
-                padding: 18px;
+
+            .result {
+                min-height: 200px;
             }
         }
     </style>
@@ -214,21 +270,22 @@
         <section class="card center">
             <div class="icon">📡</div>
             <h2>Scan Kartu Siswa</h2>
-            <p class="muted">
+            <p class="subtitle">
                 Tempelkan kartu RFID pada reader untuk mencatat kehadiran.
             </p>
 
-            <p id="tanggal"></p>
-            <p id="jam" class="muted"></p>
+            <div class="clock-box">
+                <p id="tanggal"></p>
+                <p id="jam"></p>
+            </div>
 
             <form id="scanForm">
                 <label for="uid">UID Kartu RFID</label>
-
                 <input
                     type="text"
                     id="uid"
                     name="uid"
-                    placeholder="Tempelkan kartu atau masukkan UID"
+                    placeholder="Siap memindai kartu RFID..."
                     autocomplete="off"
                     autofocus
                     required
@@ -240,16 +297,16 @@
                 </button>
             </form>
 
-            <p class="muted">
-                Pastikan kolom UID aktif saat menggunakan reader USB.
+            <p class="helper-text">
+                Kolom ini hanya menerima pemindaian otomatis dari kartu RFID.
             </p>
         </section>
 
-        <section class="card">
+        <section class="card result-card">
             <h2>Hasil Scan Terakhir</h2>
 
             <div id="hasil" class="result" aria-live="polite">
-                Menunggu kartu dipindai.
+                Menunggu kartu dipindai...
             </div>
         </section>
     </main>
@@ -262,6 +319,47 @@
 
         let sedangProses = false;
 
+        // PROTEKSI ANTI KETIK MANUAL (KHUSUS READER)
+        let waktuKetikTerakhir = 0;
+        let timerResetManual = null;
+        const BATAS_KECEPATAN_SCAN_MS = 65;
+
+      uidInput.addEventListener('paste', (e) => e.preventDefault());
+        uidInput.addEventListener('drop', (e) => e.preventDefault());
+        uidInput.addEventListener('contextmenu', (e) => e.preventDefault());
+
+      uidInput.addEventListener('keydown', function (event) {
+            if (sedangProses) {
+                event.preventDefault();
+                return;
+            }
+
+           const tombolDilarang = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab'];
+            if (tombolDilarang.includes(event.key) || event.ctrlKey || event.metaKey || event.altKey) {
+                event.preventDefault();
+                return;
+            }
+
+            const sekarang = Date.now();
+            const selisihWaktu = sekarang - waktuKetikTerakhir;
+
+           if (uidInput.value.length > 0 && selisihWaktu > BATAS_KECEPATAN_SCAN_MS) {
+                uidInput.value = '';
+            }
+
+            waktuKetikTerakhir = sekarang;
+
+            clearTimeout(timerResetManual);
+            if (event.key !== 'Enter') {
+                timerResetManual = setTimeout(() => {
+                    if (!sedangProses) {
+                        uidInput.value = '';
+                    }
+                }, 120);
+            }
+        });
+
+        // JAM & TANGGAL REALTIME
         function perbaruiWaktu() {
             const sekarang = new Date();
 
@@ -273,21 +371,24 @@
                     year: 'numeric'
                 });
 
-            document.getElementById('jam').textContent =
-                sekarang.toLocaleTimeString('id-ID', {
-                    timeZone: 'Asia/Jakarta',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit',
-                    hour12: false
-                }) + ' WIB';
+            const waktuString = sekarang.toLocaleTimeString('id-ID', {
+                timeZone: 'Asia/Jakarta',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            }).replace(/\./g, ':');
+
+            document.getElementById('jam').textContent = waktuString + ' WIB';
         }
 
         perbaruiWaktu();
         setInterval(perbaruiWaktu, 1000);
 
+        // PROSES SUBMIT SCAN
         form.addEventListener('submit', async function (event) {
             event.preventDefault();
+            clearTimeout(timerResetManual);
 
             if (sedangProses) return;
 
@@ -320,15 +421,20 @@
                 hasil.replaceChildren();
 
                 const judul = document.createElement('h3');
-                judul.textContent = data.message || 'Hasil scan';
+                judul.textContent = data.message || 'Hasil Scan';
 
                 const detail = document.createElement('div');
 
                 if (data.success && data.siswa) {
-                    hasil.className = 'result success';
+                    const statusText = (data.absensi && data.absensi.status)
+                        ? String(data.absensi.status)
+                        : '';
+                    const isTerlambat = statusText.toLowerCase().includes('terlambat');
+
+                    hasil.className = isTerlambat ? 'result late' : 'result success';
 
                     const nama = document.createElement('p');
-                    nama.className = 'student-name';
+                    nama.className = isTerlambat ? 'student-name late' : 'student-name';
                     nama.textContent = data.siswa.nama || '-';
                     detail.appendChild(nama);
 
@@ -342,9 +448,15 @@
 
                     if (data.absensi) {
                         const status = document.createElement('p');
-                        status.textContent =
-                            'Status: ' + data.absensi.status;
+                        status.className = isTerlambat ? 'status-text late' : 'status-text';
+                        status.textContent = 'Status: ' + statusText;
                         detail.appendChild(status);
+
+                        if (data.absensi.jam_masuk) {
+                            const jamMasuk = document.createElement('p');
+                            jamMasuk.textContent = 'Waktu Scan: ' + data.absensi.jam_masuk + ' WIB';
+                            detail.appendChild(jamMasuk);
+                        }
                     }
                 } else {
                     hasil.className = 'result error';
@@ -354,8 +466,7 @@
 
             } catch (error) {
                 hasil.className = 'result error';
-                hasil.textContent =
-                    'Tidak dapat menghubungi server. Pastikan Laravel berjalan.';
+                hasil.textContent = 'Tidak dapat menghubungi server. Pastikan Laravel berjalan.';
             } finally {
                 sedangProses = false;
                 scanButton.disabled = false;
@@ -365,7 +476,6 @@
             }
         });
 
-        // Kembalikan fokus ke kolom UID jika pengguna mengeklik area lain.
         document.addEventListener('click', function (event) {
             if (!event.target.closest('input, button')) {
                 uidInput.focus();
