@@ -1,205 +1,281 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Form Pengajuan Izin - Absensi RFID</title>
+@extends('layouts.app')
 
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
+@section('title', 'Form Pengajuan Izin/Sakit')
+
+@section('content')
+<style>
+    .izin-wrapper {
+        max-width: 780px;
+        margin: 0 auto;
+    }
+
+    .izin-back-link {
+        display: inline-block;
+        margin-bottom: 12px;
+        color: #850000;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .izin-back-link:hover {
+        text-decoration: underline;
+    }
+
+    .izin-page-title {
+        margin: 0 0 4px;
+        color: #850000;
+        font-family: Georgia, serif;
+        font-size: 24px;
+        font-weight: 700;
+    }
+
+    .izin-page-subtitle {
+        margin: 0 0 22px;
+        color: #6b7280;
+        font-size: 13px;
+        line-height: 1.5;
+    }
+
+    .izin-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    .izin-card-banner {
+        background: #850000;
+        padding: 16px 24px;
+        color: #ffffff;
+    }
+
+    .izin-card-banner h2 {
+        margin: 0 0 3px;
+        font-family: Georgia, serif;
+        font-size: 16px;
+        font-weight: 700;
+        color: #ffffff;
+    }
+
+    .izin-card-banner p {
+        margin: 0;
+        font-size: 12px;
+        color: #f3d1d1;
+    }
+
+    .izin-card-body {
+        padding: 24px;
+    }
+
+    .izin-student-info {
+        background: #fdf2f2;
+        border: 1px solid #f5c6cb;
+        border-left: 4px solid #850000;
+        border-radius: 6px;
+        padding: 14px 18px;
+        margin-bottom: 18px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 8px 16px;
+    }
+
+    .izin-student-info p {
+        margin: 0;
+        font-size: 13px;
+        color: #374151;
+        line-height: 1.5;
+    }
+
+    .izin-student-info strong {
+        color: #850000;
+    }
+
+    .izin-required-note {
+        margin: 0 0 20px;
+        font-size: 12px;
+        color: #6b7280;
+    }
+
+    .required-star {
+        color: #dc2626;
+        font-weight: 700;
+        margin-left: 3px;
+    }
+
+    .izin-form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    .izin-form-group {
+        margin-bottom: 20px;
+    }
+
+    .izin-label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 13px;
+        font-weight: 700;
+        color: #1f2937;
+    }
+
+    .izin-input,
+    .izin-select,
+    .izin-textarea {
+        width: 100%;
+        padding: 10px 14px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        font-size: 14px;
+        font-family: inherit;
+        color: #111827;
+        background-color: #ffffff;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .izin-input[type="file"] {
+        padding: 9px 12px;
+        background-color: #f9fafb;
+        cursor: pointer;
+    }
+
+    .izin-input:focus,
+    .izin-select:focus,
+    .izin-textarea:focus {
+        outline: none;
+        border-color: #850000;
+        box-shadow: 0 0 0 3px rgba(133, 0, 0, 0.12);
+    }
+
+    .izin-textarea {
+        resize: vertical;
+        min-height: 115px;
+        line-height: 1.5;
+    }
+
+    .izin-help {
+        margin: 6px 0 0;
+        font-size: 12px;
+        color: #6b7280;
+        line-height: 1.5;
+    }
+
+    .izin-alert {
+        padding: 13px 16px;
+        border-radius: 6px;
+        background: #fef2f2;
+        border: 1px solid #fca5a5;
+        color: #991b1b;
+        font-size: 13px;
+        line-height: 1.5;
+        margin-bottom: 20px;
+    }
+
+    .izin-alert ul {
+        margin: 6px 0 0;
+        padding-left: 18px;
+    }
+
+    .izin-actions {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 10px;
+        margin-top: 24px;
+        padding-top: 16px;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .izin-btn-cancel {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 9px 18px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        background: #ffffff;
+        color: #374151;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background 0.15s;
+    }
+
+    .izin-btn-cancel:hover {
+        background: #f9fafb;
+    }
+
+    .izin-btn-submit {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 9px 18px;
+        border: 1px solid #850000;
+        border-radius: 6px;
+        background: #850000;
+        color: #ffffff;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background 0.15s;
+    }
+
+    .izin-btn-submit:hover {
+        background: #690000;
+    }
+
+    @media (max-width: 600px) {
+        .izin-form-row {
+            grid-template-columns: 1fr;
+            gap: 0;
         }
 
-        body {
-            font-family: Arial, sans-serif;
-            background: #f3f6fb;
-            color: #1f2937;
+        .izin-actions {
+            flex-direction: column-reverse;
         }
 
-        .navbar {
-            background: #1d4ed8;
-            color: white;
-            padding: 18px 6%;
-        }
-
-        .navbar h2 {
-            font-size: 20px;
-        }
-
-        .container {
-            max-width: 720px;
-            margin: 35px auto;
-            padding: 0 20px;
-        }
-
-        .back-link {
-            display: inline-block;
-            color: #2563eb;
-            text-decoration: none;
-            margin-bottom: 20px;
-            font-size: 14px;
-        }
-
-        .card {
-            background: white;
-            padding: 28px;
-            border-radius: 12px;
-            box-shadow: 0 3px 12px #0000000a;
-        }
-
-        h1 {
-            font-size: 25px;
-            margin-bottom: 8px;
-        }
-
-        .description {
-            color: #64748b;
-            font-size: 14px;
-            line-height: 1.6;
-            margin-bottom: 25px;
-        }
-
-        .student-info {
-            background: #eff6ff;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 25px;
-        }
-
-        .student-info p {
-            margin: 6px 0;
-            font-size: 14px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            font-size: 14px;
-            font-weight: bold;
-            margin-bottom: 8px;
-        }
-
-        input, select, textarea {
+        .izin-btn-cancel,
+        .izin-btn-submit {
             width: 100%;
-            padding: 12px;
-            border: 1px solid #cbd5e1;
-            border-radius: 7px;
-            font-family: inherit;
-            font-size: 14px;
-            background: white;
         }
+    }
+</style>
 
-        input:focus, select:focus, textarea:focus {
-            outline: 2px solid #bfdbfe;
-            border-color: #2563eb;
-        }
+<div class="izin-wrapper">
+    <a href="{{ route('wali.pengajuan.index') }}" class="izin-back-link">
+        &larr; Kembali ke daftar pengajuan
+    </a>
 
-        textarea {
-            resize: vertical;
-            min-height: 120px;
-        }
+    <h1 class="izin-page-title">Form Pengajuan Izin/Sakit</h1>
+    <p class="izin-page-subtitle">
+        Isi formulir berikut dengan benar. Pengajuan akan dikirim kepada operator untuk diverifikasi.
+    </p>
 
-        .hint {
-            color: #64748b;
-            font-size: 12px;
-            margin-top: 6px;
-        }
+    <div class="izin-card">
+        <div class="izin-card-banner">
+            <h2>Informasi Pengajuan Izin / Sakit</h2>
+            <p>Lengkapi detail ketidakhadiran siswa pada formulir berikut</p>
+        </div>
 
-        .error-box {
-            background: #fee2e2;
-            color: #991b1b;
-            border-radius: 8px;
-            padding: 14px 18px;
-            margin-bottom: 20px;
-        }
-
-        .error-box ul {
-            padding-left: 20px;
-            margin-top: 8px;
-        }
-
-        .actions {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-top: 25px;
-        }
-
-        .button {
-            display: inline-block;
-            border: none;
-            border-radius: 7px;
-            padding: 12px 18px;
-            font-size: 14px;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        .primary {
-            background: #2563eb;
-            color: white;
-        }
-
-        .primary:hover {
-            background: #1d4ed8;
-        }
-
-        .secondary {
-            background: #e2e8f0;
-            color: #334155;
-        }
-
-        footer {
-            text-align: center;
-            color: #64748b;
-            font-size: 13px;
-            padding: 25px 15px;
-        }
-
-        @media (max-width: 600px) {
-            .card {
-                padding: 20px;
-            }
-
-            h1 {
-                font-size: 22px;
-            }
-        }
-    </style>
-</head>
-<body>
-
-    <nav class="navbar">
-        <h2>Absensi RFID</h2>
-    </nav>
-
-    <main class="container">
-        <a href="{{ route('wali.pengajuan.index') }}" class="back-link">
-            &larr; Kembali ke Daftar Pengajuan
-        </a>
-
-        <section class="card">
-            <h1>Form Pengajuan Izin/Sakit</h1>
-
-            <p class="description">
-                Isi formulir berikut dengan benar. Pengajuan akan dikirim
-                kepada operator untuk diverifikasi.
-            </p>
-
-            <div class="student-info">
+        <div class="izin-card-body">
+            <div class="izin-student-info">
                 <p><strong>Nama Siswa:</strong> {{ $anak->nama_lengkap }}</p>
                 <p><strong>NISN:</strong> {{ $anak->NISN }}</p>
                 <p><strong>Kelas:</strong> {{ $anak->kelas->nama_kelas ?? '-' }}</p>
             </div>
 
+            <p class="izin-required-note">
+                Kolom bertanda <span class="required-star">*</span> wajib diisi.
+            </p>
+
             @if ($errors->any())
-                <div class="error-box">
-                    <strong>Pengajuan belum dapat dikirim.</strong>
+                <div class="izin-alert">
+                    <strong>Pengajuan belum dapat dikirim:</strong>
                     <ul>
                         @foreach ($errors->all() as $error)
                             <li>{{ $error }}</li>
@@ -215,10 +291,11 @@
             >
                 @csrf
 
-                <div class="form-group">
-                    <label for="jenis">Jenis Pengajuan</label>
-
-                    <select id="jenis" name="jenis" required>
+                <div class="izin-form-group">
+                    <label for="jenis" class="izin-label">
+                        Jenis Pengajuan <span class="required-star">*</span>
+                    </label>
+                    <select id="jenis" name="jenis" class="izin-select" required>
                         <option value="">-- Pilih Jenis --</option>
                         <option value="izin" @selected(old('jenis') === 'izin')>
                             Izin
@@ -229,79 +306,91 @@
                     </select>
                 </div>
 
-                <div class="form-group">
-                    <label for="tanggal_mulai">Tanggal Mulai</label>
+                <div class="izin-form-row">
+                    <div class="izin-form-group">
+                        <label for="tanggal_mulai" class="izin-label">
+                            Tanggal Mulai <span class="required-star">*</span>
+                        </label>
+                        <input
+                            type="date"
+                            id="tanggal_mulai"
+                            name="tanggal_mulai"
+                            class="izin-input"
+                            value="{{ old('tanggal_mulai') }}"
+                            required
+                        >
+                    </div>
 
-                    <input
-                        type="date"
-                        id="tanggal_mulai"
-                        name="tanggal_mulai"
-                        value="{{ old('tanggal_mulai') }}"
-                        required
-                    >
+                    <div class="izin-form-group">
+                        <label for="tanggal_selesai" class="izin-label">
+                            Tanggal Selesai <span class="required-star">*</span>
+                        </label>
+                        <input
+                            type="date"
+                            id="tanggal_selesai"
+                            name="tanggal_selesai"
+                            class="izin-input"
+                            value="{{ old('tanggal_selesai') }}"
+                            required
+                        >
+                        <p class="izin-help">
+                            Tanggal selesai tidak boleh lebih awal daripada tanggal mulai.
+                        </p>
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="tanggal_selesai">Tanggal Selesai</label>
-
-                    <input
-                        type="date"
-                        id="tanggal_selesai"
-                        name="tanggal_selesai"
-                        value="{{ old('tanggal_selesai') }}"
-                        required
-                    >
-                    <p class="hint">
-                        Tanggal selesai tidak boleh lebih awal daripada tanggal mulai.
-                    </p>
-                </div>
-
-                <div class="form-group">
-                    <label for="alasan">Alasan Izin/Sakit</label>
-
+                <div class="izin-form-group">
+                    <label for="alasan" class="izin-label">
+                        Alasan Izin/Sakit <span class="required-star">*</span>
+                    </label>
                     <textarea
                         id="alasan"
                         name="alasan"
+                        class="izin-textarea"
                         maxlength="1000"
                         placeholder="Jelaskan alasan pengajuan..."
                         required
                     >{{ old('alasan') }}</textarea>
                 </div>
 
-                <div class="form-group">
-                    <label for="dokumen">Dokumen Pendukung (Opsional)</label>
-
+                <div class="izin-form-group">
+                    <label for="dokumen" class="izin-label">Dokumen Pendukung (Opsional)</label>
                     <input
                         type="file"
                         id="dokumen"
                         name="dokumen"
+                        class="izin-input"
                         accept=".pdf,.jpg,.jpeg,.png"
                     >
-
-                    <p class="hint">
+                    <p class="izin-help">
                         Format yang diperbolehkan: PDF, JPG, JPEG, PNG. Maksimal 2 MB.
                     </p>
                 </div>
 
-                <div class="actions">
-                    <button type="submit" class="button primary">
-                        Kirim Pengajuan
-                    </button>
-
-                    <a
-                        href="{{ route('wali.pengajuan.index') }}"
-                        class="button secondary"
-                    >
+                <div class="actions izin-actions">
+                    <a href="{{ route('wali.pengajuan.index') }}" class="izin-btn-cancel">
                         Batal
                     </a>
+                    <button type="submit" class="izin-btn-submit">
+                        Kirim Pengajuan
+                    </button>
                 </div>
             </form>
-        </section>
-    </main>
+        </div>
+    </div>
+</div>
 
-    <footer>
-        Sistem Informasi Absensi Siswa Berbasis RFID
-    </footer>
+<script>
+    const tglMulai = document.getElementById('tanggal_mulai');
+    const tglSelesai = document.getElementById('tanggal_selesai');
 
-</body>
-</html>
+    if (tglMulai && tglSelesai) {
+        tglMulai.addEventListener('change', function () {
+            tglSelesai.min = this.value;
+            if (tglSelesai.value && tglSelesai.value < this.value) {
+                tglSelesai.value = this.value;
+            }
+        });
+    }
+</script>
+@endsection
