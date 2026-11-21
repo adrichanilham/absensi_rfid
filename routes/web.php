@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
@@ -18,6 +20,12 @@ use App\Http\Controllers\UserController;
 Route::get('/', function () {
     return redirect()->route('dashboard');
 });
+
+Route::get('/pwa/manifest.json', function (): Response {
+    return response(File::get(public_path('manifest.webmanifest')), headers: [
+        'Content-Type' => 'application/manifest+json',
+    ]);
+})->withoutMiddleware('web')->name('pwa.manifest');
 
 // Login hanya untuk pengguna yang belum login.
 Route::middleware('guest')->group(function () {
