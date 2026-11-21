@@ -46,8 +46,6 @@
             min-height: 100vh;
         }
 
-        /* ================= SIDEBAR ================= */
-
         .sidebar {
             width: var(--sidebar-width);
             min-width: var(--sidebar-width);
@@ -158,47 +156,41 @@
             opacity: 1;
         }
 
-        /* ================= PANEL RFID ================= */
-
         .sidebar-bottom {
             margin-top: auto;
-            padding-top: 16px;
+            padding-top: 14px;
+            border-top: 1px solid rgba(255, 255, 255, 0.14);
         }
 
-        .rfid-panel {
+        .scan-rfid-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 9px;
             width: 100%;
-            padding: 12px 14px;
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 10px;
-            color: #ffffff;
-        }
-
-        .rfid-panel h3 {
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: rgba(255, 255, 255, 0.75);
-            margin: 0 0 8px;
-        }
-
-        .rfid-panel a {
-            display: block;
-            color: #ffffff;
+            padding: 10px 14px;
+            background: #ffffff;
+            color: var(--maroon);
             text-decoration: none;
-            font-size: 12px;
-            font-weight: 500;
-            padding: 5px 6px;
-            border-radius: 6px;
-            transition: background 0.15s;
+            font-size: 13px;
+            font-weight: 700;
+            border-radius: 8px;
+            transition: background 0.18s ease, transform 0.15s ease;
         }
 
-        .rfid-panel a:hover {
-            background: rgba(255, 255, 255, 0.12);
+        .scan-rfid-btn svg {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
         }
 
-        /* ================= AREA KONTEN ================= */
+        .scan-rfid-btn:hover {
+            background: #fdf2f2;
+        }
+
+        .scan-rfid-btn:active {
+            transform: scale(0.98);
+        }
 
         .main-area {
             flex: 1;
@@ -206,8 +198,6 @@
             display: flex;
             flex-direction: column;
         }
-
-        /* ================= HEADER / TOPBAR ================= */
 
         .topbar {
             min-height: 70px;
@@ -262,8 +252,6 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
-
-        /* ================= INFORMASI AKUN ================= */
 
         .user-info {
             display: flex;
@@ -336,8 +324,6 @@
             border-color: var(--maroon);
         }
 
-        /* ================= KONTEN HALAMAN ================= */
-
         .content {
             flex: 1;
             width: 100%;
@@ -384,13 +370,9 @@
             border-top: 1px solid var(--border);
         }
 
-        /* ================= SIDEBAR COLLAPSE ================= */
-
         .app.sidebar-hidden .sidebar {
             margin-left: calc(var(--sidebar-width) * -1);
         }
-
-        /* ================= RESPONSIVE ================= */
 
         @media (max-width: 800px) {
             .sidebar {
@@ -487,8 +469,6 @@
             }
         }
 
-        /* ================= LAYAR PENDEK ================= */
-
         @media (min-width: 801px) and (max-height: 750px) {
             .sidebar {
                 padding-top: 10px;
@@ -514,8 +494,9 @@
                 padding-top: 10px;
             }
 
-            .rfid-panel {
-                padding: 9px 11px;
+            .scan-rfid-btn {
+                padding: 9px 12px;
+                font-size: 12.5px;
             }
         }
     </style>
@@ -588,13 +569,11 @@
             </a>
 
             @if ($role === 'operator')
-
                 <a class="nav-link {{ request()->routeIs('rfid.*') ? 'active' : '' }}"
                    href="{{ route('rfid.index') }}">
                     <span class="nav-icon">▧</span>
                     Data RFID
                 </a>
-
             @endif
 
             <a class="nav-link {{ request()->routeIs('laporan.absensi') ? 'active' : '' }}"
@@ -625,12 +604,15 @@
 
         @if ($role === 'operator')
             <div class="sidebar-bottom">
-                <div class="rfid-panel">
-                    <h3>LAKUKAN SCAN ABSENSI</h3>
-                    <a href="{{ route('absensi.scan') }}">
-                        ▸ Scan RFID
-                    </a>
-                </div>
+                <a href="{{ route('absensi.scan') }}" class="scan-rfid-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="5" width="14" height="14" rx="2.5" />
+                        <line x1="2" y1="10" x2="16" y2="10" />
+                        <path d="M19 9.5a4 4 0 0 1 0 5" />
+                        <path d="M21.5 7a7.5 7.5 0 0 1 0 10" />
+                    </svg>
+                    <span>Lakukan Scan RFID</span>
+                </a>
             </div>
         @endif
 
@@ -732,4 +714,4 @@
 @stack('scripts')
 
 </body>
-</html> 
+</html>
