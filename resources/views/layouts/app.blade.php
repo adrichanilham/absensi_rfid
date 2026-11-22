@@ -7,6 +7,7 @@
 
     @includeIf('partials.pwa')
     @includeIf('pwa')
+    @include('layouts.pwa')
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -405,9 +406,9 @@
         @media (max-width: 800px) {
             .sidebar {
                 position: fixed;
-                top: 0;
+                top: 64px;
                 left: 0;
-                height: 100vh;
+                height: calc(100dvh - 64px);
                 margin-left: 0;
             }
 
@@ -422,6 +423,7 @@
             .topbar {
                 min-height: 64px;
                 padding: 10px 16px;
+                z-index: 110;
             }
 
             .topbar-left {
