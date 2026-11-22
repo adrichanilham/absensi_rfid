@@ -5,19 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Sistem Absensi RFID')</title>
 
-    @includeIf('partials.pwa')
-    @includeIf('pwa')
     @include('layouts.pwa')
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    @include('layouts.pwa')
-
-    <style>
-        * {
-            box-sizing: border-box;
-        }
 
     <style>
         :root {
@@ -67,8 +59,7 @@
             align-self: flex-start;
             overflow-y: auto;
             overflow-x: hidden;
-            background-color: #850000;
-            background: var(--maroon);
+            background: var(--maroon, #850000);
             color: #ffffff;
             padding: 16px 14px;
             display: flex;
@@ -161,7 +152,7 @@
 
         .nav-link.active {
             background: #ffffff;
-            color: #850000;
+            color: var(--maroon, #850000);
             font-weight: 700;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
         }
@@ -186,7 +177,7 @@
             width: 100%;
             padding: 10px 14px;
             background: #ffffff;
-            color: #850000;
+            color: var(--maroon, #850000);
             text-decoration: none;
             font-size: 13px;
             font-weight: 700;
@@ -259,7 +250,7 @@
 
         .menu-toggle:hover {
             background: #fdf2f2;
-            color: #850000;
+            color: var(--maroon, #850000);
         }
 
         .topbar h1 {
@@ -288,8 +279,7 @@
             height: 38px;
             min-width: 38px;
             border-radius: 50%;
-            background-color: #850000;
-            background: var(--maroon);
+            background: var(--maroon, #850000);
             color: #ffffff;
             display: flex;
             justify-content: center;
@@ -332,7 +322,7 @@
         .logout-button {
             border: 1px solid #e5d5d5;
             background: #ffffff;
-            color: #850000;
+            color: var(--maroon, #850000);
             padding: 8px 14px;
             border-radius: 8px;
             cursor: pointer;
@@ -344,7 +334,7 @@
 
         .logout-button:hover {
             background: #fef2f2;
-            border-color: #850000;
+            border-color: var(--maroon, #850000);
         }
 
         /* ================= KONTEN HALAMAN ================= */
