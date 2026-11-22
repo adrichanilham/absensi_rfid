@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Sistem Absensi RFID')</title>
 
+    @includeIf('partials.pwa')
+    @includeIf('pwa')
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -46,6 +49,8 @@
             min-height: 100vh;
         }
 
+        /* ================= SIDEBAR ================= */
+
         .sidebar {
             width: var(--sidebar-width);
             min-width: var(--sidebar-width);
@@ -55,6 +60,7 @@
             align-self: flex-start;
             overflow-y: auto;
             overflow-x: hidden;
+            background-color: #850000;
             background: var(--maroon);
             color: #ffffff;
             padding: 16px 14px;
@@ -85,7 +91,7 @@
         }
 
         .brand-icon {
-            font-size: 26px;
+            font-size: 24px;
             line-height: 1;
             background: rgba(255, 255, 255, 0.12);
             width: 40px;
@@ -95,6 +101,7 @@
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
+            color: #ffffff;
         }
 
         .brand h2 {
@@ -147,7 +154,7 @@
 
         .nav-link.active {
             background: #ffffff;
-            color: var(--maroon);
+            color: #850000;
             font-weight: 700;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
         }
@@ -155,6 +162,8 @@
         .nav-link.active .nav-icon {
             opacity: 1;
         }
+
+        /* ================= TOMBOL SCAN RFID ================= */
 
         .sidebar-bottom {
             margin-top: auto;
@@ -170,7 +179,7 @@
             width: 100%;
             padding: 10px 14px;
             background: #ffffff;
-            color: var(--maroon);
+            color: #850000;
             text-decoration: none;
             font-size: 13px;
             font-weight: 700;
@@ -192,12 +201,16 @@
             transform: scale(0.98);
         }
 
+        /* ================= AREA KONTEN ================= */
+
         .main-area {
             flex: 1;
             min-width: 0;
             display: flex;
             flex-direction: column;
         }
+
+        /* ================= HEADER / TOPBAR ================= */
 
         .topbar {
             min-height: 70px;
@@ -239,7 +252,7 @@
 
         .menu-toggle:hover {
             background: #fdf2f2;
-            color: var(--maroon);
+            color: #850000;
         }
 
         .topbar h1 {
@@ -252,6 +265,8 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
+
+        /* ================= INFORMASI AKUN ================= */
 
         .user-info {
             display: flex;
@@ -266,6 +281,7 @@
             height: 38px;
             min-width: 38px;
             border-radius: 50%;
+            background-color: #850000;
             background: var(--maroon);
             color: #ffffff;
             display: flex;
@@ -309,7 +325,7 @@
         .logout-button {
             border: 1px solid #e5d5d5;
             background: #ffffff;
-            color: var(--maroon);
+            color: #850000;
             padding: 8px 14px;
             border-radius: 8px;
             cursor: pointer;
@@ -321,8 +337,10 @@
 
         .logout-button:hover {
             background: #fef2f2;
-            border-color: var(--maroon);
+            border-color: #850000;
         }
+
+        /* ================= KONTEN HALAMAN ================= */
 
         .content {
             flex: 1;
@@ -370,9 +388,13 @@
             border-top: 1px solid var(--border);
         }
 
+        /* ================= SIDEBAR COLLAPSE ================= */
+
         .app.sidebar-hidden .sidebar {
             margin-left: calc(var(--sidebar-width) * -1);
         }
+
+        /* ================= RESPONSIVE ================= */
 
         @media (max-width: 800px) {
             .sidebar {
@@ -468,6 +490,8 @@
                 padding: 14px 12px;
             }
         }
+
+        /* ================= LAYAR PENDEK ================= */
 
         @media (min-width: 801px) and (max-height: 750px) {
             .sidebar {
@@ -611,7 +635,7 @@
                         <path d="M19 9.5a4 4 0 0 1 0 5" />
                         <path d="M21.5 7a7.5 7.5 0 0 1 0 10" />
                     </svg>
-                    <span>Lakukan Scan RFID</span>
+                    <span>Scan RFID</span>
                 </a>
             </div>
         @endif
