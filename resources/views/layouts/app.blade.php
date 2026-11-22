@@ -199,6 +199,12 @@
             transform: scale(0.98);
         }
 
+        /* ================= BACKDROP MOBILE ================= */
+
+        .sidebar-backdrop {
+            display: none;
+        }
+
         /* ================= AREA KONTEN ================= */
 
         .main-area {
@@ -385,13 +391,15 @@
             border-top: 1px solid var(--border);
         }
 
-        /* ================= SIDEBAR COLLAPSE ================= */
+        /* ================= SIDEBAR COLLAPSE DESKTOP ================= */
 
-        .app.sidebar-hidden .sidebar {
-            margin-left: calc(var(--sidebar-width) * -1);
+        @media (min-width: 801px) {
+            .app.sidebar-hidden .sidebar {
+                margin-left: calc(var(--sidebar-width) * -1);
+            }
         }
 
-        /* ================= RESPONSIVE ================= */
+        /* ================= RESPONSIVE HP & TABLET ================= */
 
         @media (max-width: 800px) {
             .sidebar {
@@ -399,15 +407,26 @@
                 top: 64px;
                 left: 0;
                 height: calc(100dvh - 64px);
+                margin-left: calc(var(--sidebar-width) * -1);
+            }
+
+            .app.sidebar-open .sidebar {
                 margin-left: 0;
+            }
+
+            .sidebar-backdrop {
+                position: fixed;
+                inset: 64px 0 0 0;
+                background: rgba(17, 24, 39, 0.45);
+                z-index: 90;
+            }
+
+            .app.sidebar-open .sidebar-backdrop {
+                display: block;
             }
 
             .app .main-area {
                 width: 100%;
-            }
-
-            .app.sidebar-hidden .sidebar {
-                margin-left: calc(var(--sidebar-width) * -1);
             }
 
             .topbar {
@@ -640,6 +659,8 @@
 
     </aside>
 
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
     <div class="main-area">
 
         <header class="topbar">
@@ -651,7 +672,7 @@
                     class="menu-toggle"
                     id="menuToggle"
                     aria-label="Buka atau tutup menu"
-                    aria-expanded="true">
+                    aria-expanded="false">
                     ☰
                 </button>
 
@@ -723,17 +744,41 @@
 <script>
     const app = document.getElementById('app');
     const menuToggle = document.getElementById('menuToggle');
+    const sidebarBackdrop = document.getElementById('sidebarBackdrop');
 
-    menuToggle.addEventListener('click', function () {
-        app.classList.toggle('sidebar-hidden');
+    function isMobileView() {
+        return window.innerWidth <= 800;
+    }
 
-        const isOpen = !app.classList.contains('sidebar-hidden');
+    function updateAriaExpanded() {
+        const isOpen = isMobileView()
+            ? app.classList.contains('sidebar-open')
+            : !app.classList.contains('sidebar-hidden');
 
         menuToggle.setAttribute('aria-expanded', isOpen);
+    }
+
+    menuToggle.addEventListener('click', function () {
+        if (isMobileView()) {
+            app.classList.toggle('sidebar-open');
+        } else {
+            app.classList.toggle('sidebar-hidden');
+        }
+        updateAriaExpanded();
     });
+
+    if (sidebarBackdrop) {
+        sidebarBackdrop.addEventListener('click', function () {
+            app.classList.remove('sidebar-open');
+            updateAriaExpanded();
+        });
+    }
+
+    updateAriaExpanded();
+    window.addEventListener('resize', updateAriaExpanded);
 </script>
 
 @stack('scripts')
 
 </body>
-</html>
+</html> 
