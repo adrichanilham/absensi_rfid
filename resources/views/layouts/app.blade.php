@@ -48,6 +48,8 @@
             min-height: 100vh;
         }
 
+        /* ================= SIDEBAR ================= */
+
         .sidebar {
             width: var(--sidebar-width);
             min-width: var(--sidebar-width);
@@ -57,7 +59,7 @@
             align-self: flex-start;
             overflow-y: auto;
             overflow-x: hidden;
-            background: var(--maroon);
+            background: var(--maroon, #850000);
             color: #ffffff;
             padding: 16px 14px;
             display: flex;
@@ -87,7 +89,7 @@
         }
 
         .brand-icon {
-            font-size: 26px;
+            font-size: 24px;
             line-height: 1;
             background: rgba(255, 255, 255, 0.12);
             width: 40px;
@@ -97,6 +99,7 @@
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
+            color: #ffffff;
         }
 
         .brand h2 {
@@ -149,7 +152,7 @@
 
         .nav-link.active {
             background: #ffffff;
-            color: var(--maroon);
+            color: var(--maroon, #850000);
             font-weight: 700;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
         }
@@ -157,6 +160,8 @@
         .nav-link.active .nav-icon {
             opacity: 1;
         }
+
+        /* ================= TOMBOL SCAN RFID ================= */
 
         .sidebar-bottom {
             margin-top: auto;
@@ -172,7 +177,7 @@
             width: 100%;
             padding: 10px 14px;
             background: #ffffff;
-            color: var(--maroon);
+            color: var(--maroon, #850000);
             text-decoration: none;
             font-size: 13px;
             font-weight: 700;
@@ -194,12 +199,22 @@
             transform: scale(0.98);
         }
 
+        /* ================= BACKDROP MOBILE ================= */
+
+        .sidebar-backdrop {
+            display: none;
+        }
+
+        /* ================= AREA KONTEN ================= */
+
         .main-area {
             flex: 1;
             min-width: 0;
             display: flex;
             flex-direction: column;
         }
+
+        /* ================= HEADER / TOPBAR ================= */
 
         .topbar {
             min-height: 70px;
@@ -241,7 +256,7 @@
 
         .menu-toggle:hover {
             background: #fdf2f2;
-            color: var(--maroon);
+            color: var(--maroon, #850000);
         }
 
         .topbar h1 {
@@ -254,6 +269,8 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
+
+        /* ================= INFORMASI AKUN ================= */
 
         .user-info {
             display: flex;
@@ -268,7 +285,7 @@
             height: 38px;
             min-width: 38px;
             border-radius: 50%;
-            background: var(--maroon);
+            background: var(--maroon, #850000);
             color: #ffffff;
             display: flex;
             justify-content: center;
@@ -311,7 +328,7 @@
         .logout-button {
             border: 1px solid #e5d5d5;
             background: #ffffff;
-            color: var(--maroon);
+            color: var(--maroon, #850000);
             padding: 8px 14px;
             border-radius: 8px;
             cursor: pointer;
@@ -323,8 +340,10 @@
 
         .logout-button:hover {
             background: #fef2f2;
-            border-color: var(--maroon);
+            border-color: var(--maroon, #850000);
         }
+
+        /* ================= KONTEN HALAMAN ================= */
 
         .content {
             flex: 1;
@@ -372,9 +391,15 @@
             border-top: 1px solid var(--border);
         }
 
-        .app.sidebar-hidden .sidebar {
-            margin-left: calc(var(--sidebar-width) * -1);
+        /* ================= SIDEBAR COLLAPSE DESKTOP ================= */
+
+        @media (min-width: 801px) {
+            .app.sidebar-hidden .sidebar {
+                margin-left: calc(var(--sidebar-width) * -1);
+            }
         }
+
+        /* ================= RESPONSIVE HP & TABLET ================= */
 
         @media (max-width: 800px) {
             .sidebar {
@@ -382,15 +407,26 @@
                 top: 64px;
                 left: 0;
                 height: calc(100dvh - 64px);
+                margin-left: calc(var(--sidebar-width) * -1);
+            }
+
+            .app.sidebar-open .sidebar {
                 margin-left: 0;
+            }
+
+            .sidebar-backdrop {
+                position: fixed;
+                inset: 64px 0 0 0;
+                background: rgba(17, 24, 39, 0.45);
+                z-index: 90;
+            }
+
+            .app.sidebar-open .sidebar-backdrop {
+                display: block;
             }
 
             .app .main-area {
                 width: 100%;
-            }
-
-            .app.sidebar-hidden .sidebar {
-                margin-left: calc(var(--sidebar-width) * -1);
             }
 
             .topbar {
@@ -471,6 +507,8 @@
                 padding: 14px 12px;
             }
         }
+
+        /* ================= LAYAR PENDEK ================= */
 
         @media (min-width: 801px) and (max-height: 750px) {
             .sidebar {
@@ -614,12 +652,14 @@
                         <path d="M19 9.5a4 4 0 0 1 0 5" />
                         <path d="M21.5 7a7.5 7.5 0 0 1 0 10" />
                     </svg>
-                    <span>Lakukan Scan RFID</span>
+                    <span>Scan RFID</span>
                 </a>
             </div>
         @endif
 
     </aside>
+
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
     <div class="main-area">
 
@@ -632,7 +672,7 @@
                     class="menu-toggle"
                     id="menuToggle"
                     aria-label="Buka atau tutup menu"
-                    aria-expanded="true">
+                    aria-expanded="false">
                     ☰
                 </button>
 
@@ -704,17 +744,41 @@
 <script>
     const app = document.getElementById('app');
     const menuToggle = document.getElementById('menuToggle');
+    const sidebarBackdrop = document.getElementById('sidebarBackdrop');
 
-    menuToggle.addEventListener('click', function () {
-        app.classList.toggle('sidebar-hidden');
+    function isMobileView() {
+        return window.innerWidth <= 800;
+    }
 
-        const isOpen = !app.classList.contains('sidebar-hidden');
+    function updateAriaExpanded() {
+        const isOpen = isMobileView()
+            ? app.classList.contains('sidebar-open')
+            : !app.classList.contains('sidebar-hidden');
 
         menuToggle.setAttribute('aria-expanded', isOpen);
+    }
+
+    menuToggle.addEventListener('click', function () {
+        if (isMobileView()) {
+            app.classList.toggle('sidebar-open');
+        } else {
+            app.classList.toggle('sidebar-hidden');
+        }
+        updateAriaExpanded();
     });
+
+    if (sidebarBackdrop) {
+        sidebarBackdrop.addEventListener('click', function () {
+            app.classList.remove('sidebar-open');
+            updateAriaExpanded();
+        });
+    }
+
+    updateAriaExpanded();
+    window.addEventListener('resize', updateAriaExpanded);
 </script>
 
 @stack('scripts')
 
 </body>
-</html>
+</html> 
