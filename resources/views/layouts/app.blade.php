@@ -391,11 +391,161 @@
             border-top: 1px solid var(--border);
         }
 
-        /* ================= SIDEBAR COLLAPSE DESKTOP ================= */
+        /* ================= LAYAR TETAP & SCROLL PROPORSIONAL DESKTOP ================= */
 
         @media (min-width: 801px) {
+            html,
+            body {
+                height: 100%;
+                overflow: hidden;
+            }
+
+            .app {
+                height: 100vh;
+                overflow: hidden;
+            }
+
             .app.sidebar-hidden .sidebar {
                 margin-left: calc(var(--sidebar-width) * -1);
+            }
+
+            .main-area {
+                height: 100vh;
+                overflow: hidden;
+            }
+
+            .topbar {
+                min-height: 58px;
+                padding: 8px 22px;
+                flex-shrink: 0;
+            }
+
+            /* Area konten utama bebas scroll untuk Laporan, Dashboard, dan Form */
+            .content {
+                flex: 1;
+                min-height: 0;
+                overflow-y: auto;
+                padding: 16px 22px;
+                display: block;
+            }
+
+            footer {
+                padding: 10px 16px;
+                font-size: 11.5px;
+                flex-shrink: 0;
+            }
+
+            /* Halaman daftar tabel (Siswa, Absensi, Kelas, RFID, Manajemen User) */
+            .content .student-page,
+            .content .attendance-page,
+            .content .class-page,
+            .content .rfid-page,
+            .content .users-page {
+                height: 100%;
+                min-height: 460px;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .content .student-heading,
+            .content .attendance-heading,
+            .content .class-heading,
+            .content .rfid-heading,
+            .content .users-heading {
+                padding: 11px 18px;
+                margin-bottom: 12px;
+                flex-shrink: 0;
+            }
+
+            .content .filter-panel,
+            .content [class$="-filter"] {
+                padding: 12px 16px;
+                margin-bottom: 12px;
+                flex-shrink: 0;
+            }
+
+            .content .filter-title {
+                margin-bottom: 8px;
+                font-size: 14px;
+            }
+
+            /* Panel kartu tabel mengisi sisa tinggi layar */
+            .content .student-table-panel,
+            .content .attendance-table-panel,
+            .content .class-table-panel,
+            .content .rfid-table-panel,
+            .content .users-card {
+                flex: 1;
+                min-height: 0;
+                display: flex;
+                flex-direction: column;
+                margin-bottom: 0;
+            }
+
+            .content .student-table-header,
+            .content .attendance-table-header,
+            .content .class-table-header,
+            .content .rfid-table-header,
+            .content .users-card-header {
+                padding: 10px 18px;
+                flex-shrink: 0;
+            }
+
+            /* Area isi tabel bisa di-scroll internal jika data melebihi tinggi layar */
+            .content .student-table-wrapper,
+            .content .attendance-table-wrap,
+            .content .class-table-wrapper,
+            .content .rfid-table-wrapper,
+            .content .users-table-wrap {
+                flex: 1;
+                min-height: 200px;
+                overflow: auto;
+            }
+
+            .content .student-table thead th,
+            .content .attendance-table thead th,
+            .content .class-table thead th,
+            .content .rfid-table thead th,
+            .content .users-table thead th {
+                position: sticky;
+                top: 0;
+                z-index: 5;
+                padding: 8px 12px;
+                font-size: 11.5px;
+                white-space: nowrap;
+            }
+
+            .content .student-table tbody td,
+            .content .attendance-table tbody td,
+            .content .class-table tbody td,
+            .content .rfid-table tbody td,
+            .content .users-table tbody td {
+                padding: 7px 12px;
+                font-size: 12.5px;
+                white-space: nowrap;
+            }
+
+            .content .student-table tbody td a,
+            .content .student-table tbody td button,
+            .content .attendance-table tbody td a,
+            .content .attendance-table tbody td button,
+            .content .class-table tbody td a,
+            .content .class-table tbody td button,
+            .content .rfid-table tbody td a,
+            .content .rfid-table tbody td button,
+            .content .users-table tbody td a,
+            .content .users-table tbody td button {
+                padding: 4px 10px;
+                font-size: 11.5px;
+            }
+
+            .content .student-pagination,
+            .content .attendance-pagination,
+            .content .class-pagination,
+            .content .rfid-pagination,
+            .content .users-pagination {
+                padding: 8px 16px;
+                flex-shrink: 0;
             }
         }
 
@@ -773,6 +923,15 @@
             updateAriaExpanded();
         });
     }
+
+    document.querySelectorAll('.sidebar .nav-link').forEach(function (link) {
+        link.addEventListener('click', function () {
+            if (isMobileView()) {
+                app.classList.remove('sidebar-open');
+                updateAriaExpanded();
+            }
+        });
+    });
 
     updateAriaExpanded();
     window.addEventListener('resize', updateAriaExpanded);

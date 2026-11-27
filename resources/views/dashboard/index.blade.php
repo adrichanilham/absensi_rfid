@@ -8,6 +8,7 @@
 
 @php
     $user = auth()->user();
+    $isGuru = $user->role === 'guru';
 
     $roleGreetings = [
         'admin' => 'Selamat Datang, Administrator!',
@@ -18,6 +19,11 @@
 
     $greeting = $roleGreetings[$user->role] ?? 'Selamat Datang!';
     $tanggalIndonesia = \Carbon\Carbon::parse($hariIni)->locale('id')->translatedFormat('l, d F Y');
+
+    // Deteksi nama kelas jika variabel $kelasGuru / $namaKelas dikirim dari controller, atau ambil dari baris absensi terbaru guru
+    $labelKelasGuru = $namaKelasGuru
+        ?? ($kelasGuru->nama_kelas ?? null)
+        ?? ($absensiTerbaru->first()?->siswa?->kelas?->nama_kelas ?? null);
 @endphp
 
 <style>
@@ -55,6 +61,20 @@
         color: #6b7280;
         font-size: 13px;
         font-weight: 500;
+    }
+
+    .guru-class-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 8px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: #fdf2f2;
+        border: 1px solid #f5c6cb;
+        color: #850000;
+        font-size: 11.5px;
+        font-weight: 700;
     }
 
     .rfid-date {
@@ -135,6 +155,13 @@
         font-weight: 600;
         line-height: 1.3;
         margin-bottom: 4px;
+    }
+
+    .rfid-stat-sub {
+        color: #9ca3af;
+        font-size: 11px;
+        font-weight: 500;
+        margin-top: 3px;
     }
 
     .rfid-stat-value {
@@ -344,8 +371,18 @@
         <div>
             <h2>{{ $greeting }}</h2>
             <p>
-                Halo, {{ $user->username }}. Berikut ringkasan data absensi hari ini.
+                @if ($isGuru)
+                    Halo, {{ $user->username }}. Berikut ringkasan kehadiran siswa di kelas Anda hari ini.
+                @else
+                    Halo, {{ $user->username }}. Berikut ringkasan data absensi hari ini.
+                @endif
             </p>
+
+            @if ($isGuru && $labelKelasGuru)
+                <div class="guru-class-badge">
+                    Wali Kelas: {{ $labelKelasGuru }}
+                </div>
+            @endif
         </div>
 
         <div class="rfid-date">
@@ -372,8 +409,13 @@
                 </svg>
             </div>
             <div class="rfid-stat-body">
-                <div class="rfid-stat-label">Total Siswa</div>
+                <div class="rfid-stat-label">
+                    {{ $isGuru ? 'Total Siswa Kelas' : 'Total Siswa' }}
+                </div>
                 <div class="rfid-stat-value">{{ $totalSiswa }}</div>
+                @if ($isGuru)
+                    <div class="rfid-stat-sub">{{ $labelKelasGuru ?? 'Kelas yang diampu' }}</div>
+                @endif
             </div>
         </div>
 
@@ -388,6 +430,9 @@
             <div class="rfid-stat-body">
                 <div class="rfid-stat-label">Hadir</div>
                 <div class="rfid-stat-value">{{ $hadirHariIni }}</div>
+                @if ($isGuru)
+                    <div class="rfid-stat-sub">Tepat waktu hari ini</div>
+                @endif
             </div>
         </div>
 
@@ -401,6 +446,9 @@
             <div class="rfid-stat-body">
                 <div class="rfid-stat-label">Terlambat</div>
                 <div class="rfid-stat-value">{{ $terlambatHariIni }}</div>
+                @if ($isGuru)
+                    <div class="rfid-stat-sub">Melewati batas masuk</div>
+                @endif
             </div>
         </div>
 
@@ -415,6 +463,9 @@
             <div class="rfid-stat-body">
                 <div class="rfid-stat-label">Belum Ada Catatan</div>
                 <div class="rfid-stat-value">{{ $belumAdaCatatan }}</div>
+                @if ($isGuru)
+                    <div class="rfid-stat-sub">Belum tercatat hari ini</div>
+                @endif
             </div>
         </div>
 
@@ -424,8 +475,14 @@
     <section class="rfid-table-section">
 
         <div class="rfid-table-heading">
-            <h3>Absensi Terbaru Hari Ini</h3>
-            <p>Daftar kehadiran siswa pada hari ini</p>
+            <h3>
+                {{ $isGuru ? 'Absensi Terbaru Kelas Hari Ini' : 'Absensi Terbaru Hari Ini' }}
+            </h3>
+            <p>
+                {{ $isGuru
+                    ? 'Daftar kehadiran siswa pada kelas yang Anda ampu hari ini'
+                    : 'Daftar kehadiran siswa pada hari ini' }}
+            </p>
         </div>
 
         <div class="rfid-table-wrapper">
@@ -481,7 +538,9 @@
                     @empty
                         <tr>
                             <td colspan="6" class="rfid-empty">
-                                Belum ada catatan absensi hari ini.
+                                {{ $isGuru
+                                    ? 'Belum ada catatan absensi untuk siswa di kelas Anda hari ini.'
+                                    : 'Belum ada catatan absensi hari ini.' }}
                             </td>
                         </tr>
                     @endforelse

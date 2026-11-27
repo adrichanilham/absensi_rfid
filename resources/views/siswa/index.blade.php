@@ -8,6 +8,12 @@
 
 @php
     $tanggalIndonesia = now()->locale('id')->translatedFormat('l, d F Y');
+    $isGuru = auth()->user()->role === 'guru';
+    $isPaginated = method_exists($siswa, 'lastPage');
+    $totalSiswa = $isPaginated ? $siswa->total() : $siswa->count();
+    $lastPage = $isPaginated ? $siswa->lastPage() : 1;
+    $currentPage = $isPaginated ? $siswa->currentPage() : 1;
+    $startNumber = $isPaginated ? ($siswa->firstItem() ?? 1) : 1;
 @endphp
 
 <style>
@@ -17,6 +23,7 @@
         color: #1f2937;
     }
 
+    /* HEADER HALAMAN */
     .student-heading {
         display: flex;
         justify-content: space-between;
@@ -26,8 +33,8 @@
         background: #ffffff;
         border: 1px solid #e5e7eb;
         border-radius: 12px;
-        padding: 18px 22px;
-        margin-bottom: 20px;
+        padding: 16px 20px;
+        margin-bottom: 14px;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
     }
 
@@ -52,7 +59,7 @@
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        padding: 9px 15px;
+        padding: 8px 14px;
         background: #fdf2f2;
         border: 1px solid #f5c6cb;
         color: #850000;
@@ -69,9 +76,113 @@
         flex-shrink: 0;
     }
 
+    /* FILTER & PENCARIAN */
+    .filter-panel {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 14px 18px;
+        margin-bottom: 14px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+    }
+
+    .filter-header-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    .filter-title {
+        margin: 0;
+        color: #850000;
+        font-size: 14.5px;
+        font-weight: 700;
+    }
+
+    .loading-badge {
+        display: none;
+        font-size: 11.5px;
+        font-weight: 600;
+        color: #850000;
+        background: #fdf2f2;
+        border: 1px solid #f5c6cb;
+        padding: 3px 10px;
+        border-radius: 999px;
+    }
+
+    .student-filters {
+        display: grid;
+        grid-template-columns: 230px 1fr 165px auto;
+        gap: 12px;
+        align-items: end;
+    }
+
+    .student-filters.guru-filters {
+        grid-template-columns: 1fr 180px auto;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .filter-group label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #374151;
+    }
+
+    .filter-group select,
+    .filter-group input {
+        height: 36px;
+        padding: 0 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-family: inherit;
+        font-size: 13px;
+        color: #1f2937;
+        background: #ffffff;
+        outline: none;
+        transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .filter-group select:focus,
+    .filter-group input:focus {
+        border-color: #850000;
+        box-shadow: 0 0 0 3px rgba(133, 0, 0, 0.1);
+    }
+
+    .btn-student-reset {
+        height: 36px;
+        padding: 0 15px;
+        background: #ffffff;
+        color: #374151;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-family: inherit;
+        font-size: 12.5px;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        white-space: nowrap;
+        transition: all 0.15s;
+    }
+
+    .btn-student-reset:hover {
+        background: #fdf2f2;
+        border-color: #850000;
+        color: #850000;
+    }
+
+    /* NOTIFIKASI */
     .student-alert {
         padding: 12px 15px;
-        margin-bottom: 16px;
+        margin-bottom: 14px;
         border-radius: 8px;
         font-size: 13px;
         font-weight: 500;
@@ -94,6 +205,7 @@
         padding-left: 18px;
     }
 
+    /* TABEL PANEL */
     .student-table-panel {
         background: #ffffff;
         border: 1px solid #e5e7eb;
@@ -108,13 +220,13 @@
         align-items: center;
         flex-wrap: wrap;
         gap: 12px;
-        padding: 15px 20px;
+        padding: 13px 20px;
         background: #850000;
         color: #ffffff;
     }
 
     .student-table-header h3 {
-        margin: 0 0 3px;
+        margin: 0 0 2px;
         font-family: inherit;
         font-size: 15.5px;
         font-weight: 700;
@@ -127,6 +239,7 @@
         font-size: 12px;
     }
 
+    /* TOMBOL */
     .student-btn {
         display: inline-flex;
         align-items: center;
@@ -155,7 +268,7 @@
     }
 
     .student-btn-edit {
-        padding: 6px 12px;
+        padding: 5px 11px;
         border-radius: 6px;
         font-size: 12px;
         background: #ffffff;
@@ -170,7 +283,7 @@
     }
 
     .student-btn-delete {
-        padding: 6px 12px;
+        padding: 5px 11px;
         border-radius: 6px;
         font-size: 12px;
         background: #ffffff;
@@ -184,6 +297,7 @@
         border-color: #b91c1c;
     }
 
+    /* TABEL */
     .student-table-wrapper {
         width: 100%;
         overflow-x: auto;
@@ -197,7 +311,7 @@
     }
 
     .student-table thead th {
-        padding: 12px 14px;
+        padding: 10px 14px;
         background: #f9fafb;
         color: #374151;
         font-size: 12px;
@@ -208,7 +322,7 @@
     }
 
     .student-table tbody td {
-        padding: 12px 14px;
+        padding: 9px 14px;
         border-bottom: 1px solid #f3f4f6;
         color: #374151;
         font-size: 13px;
@@ -245,10 +359,11 @@
         margin: 0;
     }
 
+    /* BADGE STATUS */
     .student-status {
         display: inline-block;
         min-width: 64px;
-        padding: 4px 10px;
+        padding: 3px 10px;
         border-radius: 6px;
         text-align: center;
         font-size: 11.5px;
@@ -272,62 +387,25 @@
         font-size: 13px !important;
     }
 
+    /* FOOTER INFO */
     .student-pagination {
         display: flex;
         justify-content: space-between;
         align-items: center;
         flex-wrap: wrap;
         gap: 10px;
-        padding: 13px 18px;
+        padding: 11px 18px;
         border-top: 1px solid #e5e7eb;
         background: #fafafa;
         font-size: 12px;
         color: #6b7280;
     }
 
-    .student-pagination nav {
-        display: flex;
-        justify-content: flex-end;
-    }
-
-    .student-pagination nav > div:first-child {
-        display: none;
-    }
-
-    .student-pagination nav > div:last-child {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-    }
-
-    .student-pagination nav a,
-    .student-pagination nav span[aria-current="page"] span,
-    .student-pagination nav span[aria-disabled="true"] span {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 30px;
-        height: 30px;
-        padding: 0 9px;
-        border: 1px solid #d1d5db;
-        border-radius: 6px;
-        color: #374151;
-        background: #ffffff;
-        text-decoration: none;
-        font-size: 12px;
-        font-weight: 600;
-    }
-
-    .student-pagination nav span[aria-current="page"] span {
-        background: #850000;
-        border-color: #850000;
-        color: #ffffff;
-    }
-
-    .student-pagination nav a:hover {
-        background: #fdf2f2;
-        border-color: #850000;
-        color: #850000;
+    @media (max-width: 960px) {
+        .student-filters,
+        .student-filters.guru-filters {
+            grid-template-columns: 1fr 1fr;
+        }
     }
 
     @media (max-width: 600px) {
@@ -346,6 +424,11 @@
             padding: 7px 12px;
         }
 
+        .student-filters,
+        .student-filters.guru-filters {
+            grid-template-columns: 1fr;
+        }
+
         .student-table-header {
             align-items: flex-start;
         }
@@ -362,7 +445,11 @@
     <div class="student-heading">
         <div>
             <h2>Data Siswa</h2>
-            <p>Pengelolaan data siswa SDN 37 Sungai Bangek.</p>
+            <p>
+                {{ $isGuru
+                    ? 'Daftar siswa pada kelas yang Anda ampu — SDN 37 Sungai Bangek.'
+                    : 'Pengelolaan data siswa SDN 37 Sungai Bangek.' }}
+            </p>
         </div>
 
         <div class="student-date">
@@ -393,20 +480,63 @@
         </div>
     @endif
 
+    <section class="filter-panel">
+        <div class="filter-header-row">
+            <h3 class="filter-title">Filter &amp; Pencarian Data Siswa</h3>
+            <span id="loadingAllBadge" class="loading-badge">Memuat seluruh data siswa...</span>
+        </div>
+
+        <div class="student-filters {{ $isGuru ? 'guru-filters' : '' }}">
+            @unless ($isGuru)
+                <div class="filter-group">
+                    <label for="filterKelas">Kelas</label>
+                    <select id="filterKelas">
+                        <option value="">Semua Kelas</option>
+                    </select>
+                </div>
+            @endunless
+
+            <div class="filter-group">
+                <label for="filterSearch">Cari Nama / NISN</label>
+                <input
+                    type="text"
+                    id="filterSearch"
+                    placeholder="Ketik nama siswa atau NISN...">
+            </div>
+
+            <div class="filter-group">
+                <label for="filterStatus">Status</label>
+                <select id="filterStatus">
+                    <option value="">Semua status</option>
+                    <option value="aktif">Aktif</option>
+                    <option value="tidak_aktif">Tidak Aktif</option>
+                </select>
+            </div>
+
+            <div>
+                <button type="button" id="btnResetFilter" class="btn-student-reset">
+                    Reset
+                </button>
+            </div>
+        </div>
+    </section>
+
     <section class="student-table-panel">
 
         <div class="student-table-header">
             <div>
-                <h3>Daftar Siswa</h3>
-                <p>Data siswa SDN 37 Sungai Bangek</p>
+                <h3 id="tableBannerTitle">Daftar Siswa</h3>
+                <p id="tableBannerSubtitle">
+                    {{ $isGuru ? 'Data siswa kelas yang Anda ampu' : 'Data siswa SDN 37 Sungai Bangek' }}
+                </p>
             </div>
 
-            @if(auth()->user()->role !== 'guru')
+            @unless ($isGuru)
                 <a href="{{ route('siswa.create') }}"
                    class="student-btn student-btn-add">
                     + Tambah Siswa
                 </a>
-            @endif
+            @endunless
         </div>
 
         <div class="student-table-wrapper">
@@ -421,17 +551,21 @@
                         <th>UID RFID</th>
                         <th>Status</th>
 
-                        @if(auth()->user()->role !== 'guru')
+                        @unless ($isGuru)
                             <th>Aksi</th>
-                        @endif
+                        @endunless
                     </tr>
                 </thead>
 
-                <tbody>
+                <tbody id="siswaTableBody">
                     @forelse ($siswa as $item)
-                        <tr>
-                            <td>
-                                {{ $siswa->firstItem() + $loop->index }}
+                        <tr data-siswa-row
+                            data-kelas="{{ $item->kelas?->nama_kelas ?? '' }}"
+                            data-nama="{{ strtolower($item->nama_lengkap) }}"
+                            data-nisn="{{ strtolower($item->nisn) }}"
+                            data-status="{{ $item->status }}">
+                            <td class="col-no">
+                                {{ $startNumber + $loop->index }}
                             </td>
 
                             <td>{{ $item->nisn }}</td>
@@ -464,7 +598,7 @@
                                 </span>
                             </td>
 
-                            @if(auth()->user()->role !== 'guru')
+                            @unless ($isGuru)
                                 <td>
                                     <div class="student-actions">
                                         <a href="{{ route('siswa.edit', $item) }}"
@@ -489,31 +623,225 @@
                                         @endif
                                     </div>
                                 </td>
-                            @endif
+                            @endunless
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="{{ auth()->user()->role !== 'guru' ? 8 : 7 }}"
+                            <td colspan="{{ $isGuru ? 7 : 8 }}"
                                 class="student-empty">
                                 Belum ada data siswa.
                             </td>
                         </tr>
                     @endforelse
+
+                    <tr id="emptyFilterRow" style="display: none;">
+                        <td colspan="{{ $isGuru ? 7 : 8 }}"
+                            class="student-empty">
+                            Tidak ada data siswa yang sesuai dengan filter.
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
 
         <div class="student-pagination">
-            <div>
-                Menampilkan {{ $siswa->count() }} data siswa pada halaman ini.
+            <div id="siswaSummaryText">
+                Menampilkan {{ $siswa->count() }} dari {{ $totalSiswa }} data siswa.
             </div>
-
             <div>
-                {{ $siswa->links() }}
+                {{ $isGuru
+                    ? 'Gunakan kolom pencarian atau filter status untuk menyaring siswa.'
+                    : 'Gunakan filter kelas atau kolom pencarian di atas untuk menyaring siswa.' }}
             </div>
         </div>
 
     </section>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const isGuru = {{ $isGuru ? 'true' : 'false' }};
+    const tbody = document.getElementById('siswaTableBody');
+    const emptyRow = document.getElementById('emptyFilterRow');
+    const filterKelas = document.getElementById('filterKelas');
+    const filterSearch = document.getElementById('filterSearch');
+    const filterStatus = document.getElementById('filterStatus');
+    const btnReset = document.getElementById('btnResetFilter');
+    const bannerTitle = document.getElementById('tableBannerTitle');
+    const bannerSubtitle = document.getElementById('tableBannerSubtitle');
+    const summaryText = document.getElementById('siswaSummaryText');
+    const loadingBadge = document.getElementById('loadingAllBadge');
+
+    const lastPage = {{ $lastPage }};
+    const currentPage = {{ $currentPage }};
+
+    const initialRows = Array.from(tbody.querySelectorAll('tr[data-siswa-row]'));
+    if (!initialRows.length) return;
+
+    const pagesMap = {};
+    pagesMap[currentPage] = initialRows;
+
+    let allRows = [...initialRows];
+
+    function getGuruClassLabel() {
+        const classes = [...new Set(
+            allRows.map(r => r.dataset.kelas).filter(Boolean)
+        )];
+        return classes.length === 1 ? classes[0] : 'Kelas Diampu';
+    }
+
+    function rebuildClassOptions() {
+        if (isGuru || !filterKelas) return;
+
+        const previousValue = filterKelas.value;
+        const classCounts = {};
+
+        allRows.forEach(function (row) {
+            const kls = row.dataset.kelas;
+            if (kls) {
+                classCounts[kls] = (classCounts[kls] || 0) + 1;
+            }
+        });
+
+        const sortedClasses = Object.keys(classCounts).sort(function (a, b) {
+            return a.localeCompare(b, 'id', { numeric: true });
+        });
+
+        filterKelas.innerHTML = `<option value="">Semua Kelas (${allRows.length} siswa)</option>`;
+        sortedClasses.forEach(function (kls) {
+            const opt = document.createElement('option');
+            opt.value = kls;
+            opt.textContent = `${kls} (${classCounts[kls]} siswa)`;
+            filterKelas.appendChild(opt);
+        });
+
+        if (previousValue && classCounts[previousValue]) {
+            filterKelas.value = previousValue;
+        }
+    }
+
+    function applyFilter() {
+        const selectedKelas = (!isGuru && filterKelas) ? filterKelas.value : '';
+        const keyword = filterSearch.value.trim().toLowerCase();
+        const selectedStatus = filterStatus.value;
+
+        let visibleCount = 0;
+
+        allRows.forEach(function (row) {
+            const matchKelas = !selectedKelas || row.dataset.kelas === selectedKelas;
+            const matchSearch = !keyword ||
+                row.dataset.nama.includes(keyword) ||
+                row.dataset.nisn.includes(keyword);
+            const matchStatus = !selectedStatus || row.dataset.status === selectedStatus;
+
+            if (matchKelas && matchSearch && matchStatus) {
+                row.style.display = '';
+                visibleCount++;
+                const noCell = row.querySelector('.col-no');
+                if (noCell) noCell.textContent = visibleCount;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        if (emptyRow) {
+            emptyRow.style.display = visibleCount === 0 ? '' : 'none';
+        }
+
+        if (isGuru) {
+            const guruKelasLabel = getGuruClassLabel();
+            bannerTitle.textContent = `Daftar Siswa — ${guruKelasLabel}`;
+            bannerSubtitle.textContent = `Menampilkan ${visibleCount} dari ${allRows.length} siswa pada ${guruKelasLabel}`;
+        } else {
+            bannerTitle.textContent = selectedKelas
+                ? `Daftar Siswa — ${selectedKelas}`
+                : 'Daftar Siswa';
+
+            bannerSubtitle.textContent = selectedKelas
+                ? `Menampilkan seluruh ${visibleCount} siswa pada ${selectedKelas}`
+                : `Menampilkan ${visibleCount} dari ${allRows.length} siswa terdaftar`;
+        }
+
+        summaryText.textContent = `Menampilkan ${visibleCount} dari ${allRows.length} data siswa.`;
+    }
+
+    async function fetchRemainingPages() {
+        if (lastPage <= 1) return;
+
+        if (loadingBadge) {
+            loadingBadge.style.display = 'inline-block';
+        }
+
+        const pagesToFetch = [];
+        for (let p = 1; p <= lastPage; p++) {
+            if (p !== currentPage) {
+                pagesToFetch.push(p);
+            }
+        }
+
+        const batchSize = 3;
+        for (let i = 0; i < pagesToFetch.length; i += batchSize) {
+            const batch = pagesToFetch.slice(i, i + batchSize);
+
+            await Promise.all(batch.map(async function (pageNum) {
+                try {
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('page', pageNum);
+
+                    const res = await fetch(url.toString(), {
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    });
+                    if (!res.ok) return;
+
+                    const html = await res.text();
+                    const doc = new DOMParser().parseFromString(html, 'text/html');
+                    pagesMap[pageNum] = Array.from(
+                        doc.querySelectorAll('#siswaTableBody tr[data-siswa-row]')
+                    );
+                } catch (e) {
+                    // Abaikan jika ada halaman gagal dimuat
+                }
+            }));
+        }
+
+        allRows = [];
+        for (let p = 1; p <= lastPage; p++) {
+            if (pagesMap[p]) {
+                allRows.push(...pagesMap[p]);
+            }
+        }
+
+        allRows.forEach(function (row) {
+            if (!tbody.contains(row)) {
+                tbody.insertBefore(row, emptyRow);
+            }
+        });
+
+        if (loadingBadge) {
+            loadingBadge.style.display = 'none';
+        }
+
+        rebuildClassOptions();
+        applyFilter();
+    }
+
+    if (filterKelas) {
+        filterKelas.addEventListener('change', applyFilter);
+    }
+    filterSearch.addEventListener('input', applyFilter);
+    filterStatus.addEventListener('change', applyFilter);
+
+    btnReset.addEventListener('click', function () {
+        if (filterKelas) filterKelas.value = '';
+        filterSearch.value = '';
+        filterStatus.value = '';
+        applyFilter();
+    });
+
+    rebuildClassOptions();
+    applyFilter();
+    fetchRemainingPages();
+});
+</script>
 
 @endsection

@@ -8,6 +8,11 @@
 
 @php
     $tanggalIndonesia = now()->locale('id')->translatedFormat('l, d F Y');
+    $isPaginated = method_exists($users, 'lastPage');
+    $totalUsers = $isPaginated ? $users->total() : $users->count();
+    $lastPage = $isPaginated ? $users->lastPage() : 1;
+    $currentPage = $isPaginated ? $users->currentPage() : 1;
+    $startNumber = $isPaginated ? ($users->firstItem() ?? 1) : 1;
 @endphp
 
 <style>
@@ -28,8 +33,8 @@
         background: #ffffff;
         border: 1px solid #e5e7eb;
         border-radius: 12px;
-        padding: 18px 22px;
-        margin-bottom: 20px;
+        padding: 16px 20px;
+        margin-bottom: 14px;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
     }
 
@@ -60,20 +65,119 @@
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        padding: 9px 14px;
+        padding: 8px 14px;
         background: #fdf2f2;
         border: 1px solid #f5c6cb;
         color: #850000;
         border-radius: 8px;
-        font-size: 12.5px;
+        font-size: 13px;
         font-weight: 700;
         white-space: nowrap;
     }
 
     .users-date svg {
-        width: 16px;
-        height: 16px;
+        width: 17px;
+        height: 17px;
         flex-shrink: 0;
+    }
+
+    /* ================= FILTER & PENCARIAN ================= */
+    .filter-panel {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 14px 18px;
+        margin-bottom: 14px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+    }
+
+    .filter-header-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    .filter-title {
+        margin: 0;
+        color: #850000;
+        font-size: 14.5px;
+        font-weight: 700;
+    }
+
+    .loading-badge {
+        display: none;
+        font-size: 11.5px;
+        font-weight: 600;
+        color: #850000;
+        background: #fdf2f2;
+        border: 1px solid #f5c6cb;
+        padding: 3px 10px;
+        border-radius: 999px;
+    }
+
+    .users-filters {
+        display: grid;
+        grid-template-columns: 210px 1fr 195px auto;
+        gap: 12px;
+        align-items: end;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .filter-group label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #374151;
+    }
+
+    .filter-group select,
+    .filter-group input {
+        height: 36px;
+        padding: 0 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-family: inherit;
+        font-size: 13px;
+        color: #1f2937;
+        background: #ffffff;
+        outline: none;
+        transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .filter-group select:focus,
+    .filter-group input:focus {
+        border-color: #850000;
+        box-shadow: 0 0 0 3px rgba(133, 0, 0, 0.1);
+    }
+
+    .btn-users-reset {
+        height: 36px;
+        padding: 0 15px;
+        background: #ffffff;
+        color: #374151;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-family: inherit;
+        font-size: 12.5px;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        white-space: nowrap;
+        transition: all 0.15s;
+    }
+
+    .btn-users-reset:hover {
+        background: #fdf2f2;
+        border-color: #850000;
+        color: #850000;
     }
 
     /* ================= TOMBOL ================= */
@@ -82,15 +186,14 @@
         justify-content: center;
         align-items: center;
         gap: 6px;
-        min-height: 36px;
-        padding: 0 14px;
+        padding: 8px 14px;
         border: 1px solid transparent;
         border-radius: 8px;
         background: #ffffff;
         color: #850000;
         font-family: inherit;
         font-size: 12.5px;
-        font-weight: 700;
+        font-weight: 600;
         text-decoration: none;
         cursor: pointer;
         white-space: nowrap;
@@ -104,14 +207,12 @@
     }
 
     .users-btn.edit {
-        min-height: 30px;
         padding: 5px 11px;
         border-radius: 6px;
         background: #ffffff;
         border-color: #e6caca;
         color: #850000;
         font-size: 12px;
-        font-weight: 600;
         box-shadow: none;
     }
 
@@ -122,14 +223,12 @@
     }
 
     .users-btn.delete {
-        min-height: 30px;
         padding: 5px 11px;
         border-radius: 6px;
         background: #ffffff;
         border-color: #fecaca;
         color: #b91c1c;
         font-size: 12px;
-        font-weight: 600;
         box-shadow: none;
     }
 
@@ -142,7 +241,7 @@
     /* ================= NOTIFIKASI ================= */
     .users-alert {
         padding: 12px 15px;
-        margin-bottom: 16px;
+        margin-bottom: 14px;
         border: 1px solid;
         border-radius: 8px;
         font-size: 13px;
@@ -180,13 +279,13 @@
         align-items: center;
         flex-wrap: wrap;
         gap: 12px;
-        padding: 15px 20px;
+        padding: 13px 20px;
         background: #850000;
         color: #ffffff;
     }
 
     .users-card-header-title h3 {
-        margin: 0 0 3px;
+        margin: 0 0 2px;
         color: #ffffff;
         font-family: inherit;
         font-size: 15.5px;
@@ -230,7 +329,7 @@
     }
 
     .users-table th {
-        padding: 12px 16px;
+        padding: 10px 16px;
         background: #f9fafb;
         border-bottom: 1px solid #e5e7eb;
         color: #374151;
@@ -241,7 +340,7 @@
     }
 
     .users-table td {
-        padding: 12px 16px;
+        padding: 9px 16px;
         border-bottom: 1px solid #f3f4f6;
         color: #374151;
         font-size: 13px;
@@ -263,7 +362,7 @@
 
     .users-role {
         display: inline-block;
-        padding: 4px 10px;
+        padding: 3px 10px;
         border-radius: 6px;
         background: #fdf2f2;
         border: 1px solid #f5c6cb;
@@ -290,6 +389,12 @@
         line-height: 1.5;
     }
 
+    .users-relation-empty {
+        color: #9ca3af;
+        font-style: italic;
+        font-size: 12px;
+    }
+
     .users-actions {
         display: flex;
         align-items: center;
@@ -309,64 +414,25 @@
         font-size: 13px;
     }
 
-    /* ================= PAGINATION ================= */
+    /* ================= FOOTER INFO ================= */
     .users-pagination {
         display: flex;
         justify-content: space-between;
         align-items: center;
         flex-wrap: wrap;
         gap: 10px;
-        padding: 13px 18px;
+        padding: 11px 18px;
         border-top: 1px solid #e5e7eb;
         background: #fafafa;
         font-size: 12px;
         color: #6b7280;
     }
 
-    .users-pagination nav {
-        display: flex;
-        justify-content: flex-end;
-    }
-
-    .users-pagination nav > div:first-child {
-        display: none;
-    }
-
-    .users-pagination nav > div:last-child {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        flex-wrap: wrap;
-    }
-
-    .users-pagination nav a,
-    .users-pagination nav span[aria-current="page"] span,
-    .users-pagination nav span[aria-disabled="true"] span {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 30px;
-        height: 30px;
-        padding: 0 9px;
-        border: 1px solid #d1d5db;
-        border-radius: 6px;
-        color: #374151;
-        background: #ffffff;
-        text-decoration: none;
-        font-size: 12px;
-        font-weight: 600;
-    }
-
-    .users-pagination nav span[aria-current="page"] span {
-        background: #850000;
-        border-color: #850000;
-        color: #ffffff;
-    }
-
-    .users-pagination nav a:hover {
-        background: #fdf2f2;
-        border-color: #850000;
-        color: #850000;
+    /* ================= RESPONSIVE TABLET ================= */
+    @media (max-width: 960px) {
+        .users-filters {
+            grid-template-columns: 1fr 1fr;
+        }
     }
 
     /* ================= RESPONSIVE MOBILE (TAMPILAN KARTU) ================= */
@@ -381,6 +447,15 @@
             font-size: 17px;
         }
 
+        .users-date {
+            font-size: 12px;
+            padding: 7px 12px;
+        }
+
+        .users-filters {
+            grid-template-columns: 1fr;
+        }
+
         .users-card-header {
             padding: 14px 16px;
             flex-direction: column;
@@ -392,7 +467,6 @@
             justify-content: space-between;
         }
 
-        /* Ubah baris tabel menjadi kartu rapi di layar HP agar tidak perlu geser samping */
         .users-table thead {
             display: none;
         }
@@ -475,7 +549,7 @@
             align-items: stretch;
         }
 
-        .users-btn {
+        .users-card-header-actions .users-btn {
             width: 100%;
         }
 
@@ -492,6 +566,7 @@
 
 <div class="users-page">
 
+    {{-- JUDUL DAN TANGGAL --}}
     <div class="users-heading">
         <div>
             <h2>Manajemen Pengguna</h2>
@@ -511,6 +586,7 @@
         </div>
     </div>
 
+    {{-- NOTIFIKASI --}}
     @if (session('success'))
         <div class="users-alert success">
             {{ session('success') }}
@@ -534,17 +610,61 @@
         </div>
     @endif
 
+    {{-- FILTER & PENCARIAN --}}
+    <section class="filter-panel">
+        <div class="filter-header-row">
+            <h3 class="filter-title">Filter &amp; Pencarian Pengguna</h3>
+            <span id="loadingAllBadge" class="loading-badge">Memuat seluruh akun pengguna...</span>
+        </div>
+
+        <div class="users-filters">
+            <div class="filter-group">
+                <label for="filterRole">Role Pengguna</label>
+                <select id="filterRole">
+                    <option value="">Semua Role</option>
+                    <option value="operator">Operator</option>
+                    <option value="guru">Guru</option>
+                    <option value="wali_murid">Wali Murid</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="filterSearch">Cari Username / Kelas / Nama Anak</label>
+                <input
+                    type="text"
+                    id="filterSearch"
+                    placeholder="Ketik username, nama kelas, atau nama siswa...">
+            </div>
+
+            <div class="filter-group">
+                <label for="filterHubungan">Status Hubungan</label>
+                <select id="filterHubungan">
+                    <option value="">Semua Status</option>
+                    <option value="terhubung">Sudah Terhubung</option>
+                    <option value="belum">Belum Terhubung</option>
+                </select>
+            </div>
+
+            <div>
+                <button type="button" id="btnResetFilter" class="btn-users-reset">
+                    Reset
+                </button>
+            </div>
+        </div>
+    </section>
+
+    {{-- KARTU & TABEL PENGGUNA --}}
     <section class="users-card">
 
         <div class="users-card-header">
             <div class="users-card-header-title">
-                <h3>Daftar Akun Pengguna</h3>
-                <p>Akun yang memiliki akses masuk ke sistem absensi</p>
+                <h3 id="tableBannerTitle">Daftar Akun Pengguna</h3>
+                <p id="tableBannerSubtitle">Akun yang memiliki akses masuk ke sistem absensi</p>
             </div>
 
             <div class="users-card-header-actions">
-                <span class="users-total-badge">
-                    Total akun: {{ $users->total() }}
+                <span id="usersTotalBadge" class="users-total-badge">
+                    Total akun: {{ $totalUsers }}
                 </span>
 
                 <a href="{{ route('operator.users.create') }}" class="users-btn">
@@ -565,7 +685,7 @@
                     </tr>
                 </thead>
 
-                <tbody>
+                <tbody id="usersTableBody">
                     @forelse ($users as $user)
                         @php
                             $roleClass = match ($user->role) {
@@ -573,10 +693,27 @@
                                 'wali_murid' => 'role-wali',
                                 default => '',
                             };
+
+                            if ($user->role === 'wali_murid') {
+                                $hubunganText = $user->anak?->nama_lengkap ?? 'Belum terhubung';
+                                $statusHubungan = $user->anak ? 'terhubung' : 'belum';
+                            } elseif ($user->role === 'guru') {
+                                $kelasList = $user->kelasDiampu->pluck('nama_kelas')->join(', ');
+                                $hubunganText = $kelasList ?: 'Belum menjadi wali kelas';
+                                $statusHubungan = $kelasList !== '' ? 'terhubung' : 'belum';
+                            } else {
+                                $hubunganText = '—';
+                                $statusHubungan = 'terhubung';
+                            }
                         @endphp
-                        <tr>
-                            <td class="users-col-no" data-label="No.">
-                                {{ $users->firstItem() + $loop->index }}
+
+                        <tr data-user-row
+                            data-role="{{ $user->role }}"
+                            data-username="{{ strtolower($user->username) }}"
+                            data-hubungan="{{ strtolower($hubunganText) }}"
+                            data-status-hubungan="{{ $statusHubungan }}">
+                            <td class="users-col-no col-no" data-label="No.">
+                                {{ $startNumber + $loop->index }}
                             </td>
 
                             <td data-label="Username">
@@ -590,12 +727,10 @@
                             </td>
 
                             <td class="users-relation" data-label="Hubungan">
-                                @if ($user->role === 'wali_murid')
-                                    {{ $user->anak?->nama_lengkap ?? 'Belum terhubung' }}
-                                @elseif ($user->role === 'guru')
-                                    {{ $user->kelasDiampu->pluck('nama_kelas')->join(', ') ?: 'Belum menjadi wali kelas' }}
+                                @if ($statusHubungan === 'belum')
+                                    <span class="users-relation-empty">{{ $hubunganText }}</span>
                                 @else
-                                    —
+                                    {{ $hubunganText }}
                                 @endif
                             </td>
 
@@ -628,21 +763,205 @@
                             </td>
                         </tr>
                     @endforelse
+
+                    <tr id="emptyFilterRow" style="display: none;">
+                        <td colspan="5" class="users-empty">
+                            Tidak ada akun pengguna yang sesuai dengan filter.
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
 
         <div class="users-pagination">
-            <div>
-                Menampilkan {{ $users->count() }} dari {{ $users->total() }} akun pengguna.
+            <div id="usersSummaryText">
+                Menampilkan {{ $users->count() }} dari {{ $totalUsers }} akun pengguna.
             </div>
-
             <div>
-                {{ $users->links() }}
+                Gunakan filter role atau kolom pencarian di atas untuk menyaring akun pengguna.
             </div>
         </div>
 
     </section>
 
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const tbody = document.getElementById('usersTableBody');
+    const emptyRow = document.getElementById('emptyFilterRow');
+    const filterRole = document.getElementById('filterRole');
+    const filterSearch = document.getElementById('filterSearch');
+    const filterHubungan = document.getElementById('filterHubungan');
+    const btnReset = document.getElementById('btnResetFilter');
+    const bannerTitle = document.getElementById('tableBannerTitle');
+    const bannerSubtitle = document.getElementById('tableBannerSubtitle');
+    const totalBadge = document.getElementById('usersTotalBadge');
+    const summaryText = document.getElementById('usersSummaryText');
+    const loadingBadge = document.getElementById('loadingAllBadge');
+
+    const lastPage = {{ $lastPage }};
+    const currentPage = {{ $currentPage }};
+
+    const initialRows = Array.from(tbody.querySelectorAll('tr[data-user-row]'));
+    if (!initialRows.length) return;
+
+    const pagesMap = {};
+    pagesMap[currentPage] = initialRows;
+
+    let allRows = [...initialRows];
+
+    const roleLabels = {
+        operator: 'Operator',
+        guru: 'Guru',
+        wali_murid: 'Wali Murid'
+    };
+
+    function rebuildRoleOptions() {
+        const previousValue = filterRole.value;
+        const roleCounts = {
+            operator: 0,
+            guru: 0,
+            wali_murid: 0
+        };
+
+        allRows.forEach(function (row) {
+            const r = row.dataset.role;
+            if (Object.prototype.hasOwnProperty.call(roleCounts, r)) {
+                roleCounts[r]++;
+            }
+        });
+
+        filterRole.innerHTML = `<option value="">Semua Role (${allRows.length} akun)</option>`;
+        Object.keys(roleLabels).forEach(function (key) {
+            const opt = document.createElement('option');
+            opt.value = key;
+            opt.textContent = `${roleLabels[key]} (${roleCounts[key]} akun)`;
+            filterRole.appendChild(opt);
+        });
+
+        if (previousValue && Object.prototype.hasOwnProperty.call(roleLabels, previousValue)) {
+            filterRole.value = previousValue;
+        }
+    }
+
+    function applyFilter() {
+        const selectedRole = filterRole.value;
+        const keyword = filterSearch.value.trim().toLowerCase();
+        const selectedHubungan = filterHubungan.value;
+
+        let visibleCount = 0;
+
+        allRows.forEach(function (row) {
+            const matchRole = !selectedRole || row.dataset.role === selectedRole;
+            const matchSearch = !keyword ||
+                row.dataset.username.includes(keyword) ||
+                row.dataset.hubungan.includes(keyword);
+            const matchHubungan = !selectedHubungan || row.dataset.statusHubungan === selectedHubungan;
+
+            if (matchRole && matchSearch && matchHubungan) {
+                row.style.display = '';
+                visibleCount++;
+                const noCell = row.querySelector('.col-no');
+                if (noCell) noCell.textContent = visibleCount;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        if (emptyRow) {
+            emptyRow.style.display = visibleCount === 0 ? '' : 'none';
+        }
+
+        bannerTitle.textContent = selectedRole
+            ? `Daftar Akun — ${roleLabels[selectedRole]}`
+            : 'Daftar Akun Pengguna';
+
+        bannerSubtitle.textContent = selectedRole
+            ? `Menampilkan seluruh ${visibleCount} akun dengan role ${roleLabels[selectedRole]}`
+            : `Menampilkan ${visibleCount} dari ${allRows.length} akun pengguna terdaftar`;
+
+        if (totalBadge) {
+            totalBadge.textContent = `Total akun: ${allRows.length}`;
+        }
+
+        summaryText.textContent = `Menampilkan ${visibleCount} dari ${allRows.length} akun pengguna.`;
+    }
+
+    async function fetchRemainingPages() {
+        if (lastPage <= 1) return;
+
+        if (loadingBadge) {
+            loadingBadge.style.display = 'inline-block';
+        }
+
+        const pagesToFetch = [];
+        for (let p = 1; p <= lastPage; p++) {
+            if (p !== currentPage) {
+                pagesToFetch.push(p);
+            }
+        }
+
+        const batchSize = 3;
+        for (let i = 0; i < pagesToFetch.length; i += batchSize) {
+            const batch = pagesToFetch.slice(i, i + batchSize);
+
+            await Promise.all(batch.map(async function (pageNum) {
+                try {
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('page', pageNum);
+
+                    const res = await fetch(url.toString(), {
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    });
+                    if (!res.ok) return;
+
+                    const html = await res.text();
+                    const doc = new DOMParser().parseFromString(html, 'text/html');
+                    pagesMap[pageNum] = Array.from(
+                        doc.querySelectorAll('#usersTableBody tr[data-user-row]')
+                    );
+                } catch (e) {
+                }
+            }));
+        }
+
+        allRows = [];
+        for (let p = 1; p <= lastPage; p++) {
+            if (pagesMap[p]) {
+                allRows.push(...pagesMap[p]);
+            }
+        }
+
+        allRows.forEach(function (row) {
+            if (!tbody.contains(row)) {
+                tbody.insertBefore(row, emptyRow);
+            }
+        });
+
+        if (loadingBadge) {
+            loadingBadge.style.display = 'none';
+        }
+
+        rebuildRoleOptions();
+        applyFilter();
+    }
+
+    filterRole.addEventListener('change', applyFilter);
+    filterSearch.addEventListener('input', applyFilter);
+    filterHubungan.addEventListener('change', applyFilter);
+
+    btnReset.addEventListener('click', function () {
+        filterRole.value = '';
+        filterSearch.value = '';
+        filterHubungan.value = '';
+        applyFilter();
+    });
+
+    rebuildRoleOptions();
+    applyFilter();
+    fetchRemainingPages();
+});
+</script>
+
 @endsection
