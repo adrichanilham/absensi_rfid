@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Absensi;
+use App\Models\Kelas;
 use App\Models\Siswa;
 
 class DashboardController extends Controller
@@ -10,21 +11,45 @@ class DashboardController extends Controller
     public function index()
     {
         $hariIni = today();
+        $user = auth()->user();
+        $isGuru = $user && $user->role === 'guru';
 
-        // Jumlah siswa yang masih aktif
-        $totalSiswa = Siswa::where('status', 'aktif')->count();
+        $kelasGuruIds = collect();
+        $namaKelasGuru = null;
 
-        // Jumlah absensi berdasarkan status hari ini
-        $hadirHariIni = Absensi::whereDate('tanggal', $hariIni)
+        if ($isGuru) {
+            $kelasDiampu = Kelas::where('wali_kelas_id', $user->id)->get();
+            $kelasGuruIds = $kelasDiampu->pluck('id');
+            $namaKelasGuru = $kelasDiampu->pluck('nama_kelas')->implode(', ') ?: null;
+        }
+
+        // Jumlah siswa aktif (khusus kelas yang diampu jika role guru)
+        $siswaQuery = Siswa::where('status', 'aktif');
+        if ($isGuru) {
+            $siswaQuery->whereIn('kelas_id', $kelasGuruIds);
+        }
+        $totalSiswa = $siswaQuery->count();
+
+        // Helper query absensi hari ini
+        $absensiHariIniQuery = function () use ($hariIni, $isGuru, $kelasGuruIds) {
+            return Absensi::whereDate('tanggal', $hariIni)
+                ->when($isGuru, function ($query) use ($kelasGuruIds) {
+                    $query->whereHas('siswa', function ($siswaQ) use ($kelasGuruIds) {
+                        $siswaQ->whereIn('kelas_id', $kelasGuruIds);
+                    });
+                });
+        };
+
+        $hadirHariIni = (clone $absensiHariIniQuery())
             ->where('status', 'hadir')
             ->count();
 
-        $terlambatHariIni = Absensi::whereDate('tanggal', $hariIni)
+        $terlambatHariIni = (clone $absensiHariIniQuery())
             ->where('status', 'terlambat')
             ->count();
 
         // Hitung siswa aktif yang sudah memiliki catatan hari ini
-        $siswaSudahAdaCatatan = Absensi::whereDate('tanggal', $hariIni)
+        $siswaSudahAdaCatatan = (clone $absensiHariIniQuery())
             ->whereIn('status', [
                 'hadir',
                 'terlambat',
@@ -42,11 +67,10 @@ class DashboardController extends Controller
         );
 
         // Ambil 10 catatan absensi terbaru hari ini
-        $absensiTerbaru = Absensi::with('siswa.kelas')
-            ->whereDate('tanggal', $hariIni)
+        $absensiTerbaru = (clone $absensiHariIniQuery())
+            ->with('siswa.kelas')
             ->orderByDesc('waktu_masuk')
             ->orderByDesc('id')
-            ->limit(10)
             ->get();
 
         return view('dashboard.index', compact(
@@ -55,7 +79,8 @@ class DashboardController extends Controller
             'hadirHariIni',
             'terlambatHariIni',
             'belumAdaCatatan',
-            'absensiTerbaru'
+            'absensiTerbaru',
+            'namaKelasGuru'
         ));
     }
 }

@@ -13,7 +13,7 @@ class RfidController extends Controller
     {
         $rfid = Rfid::with('siswa')
             ->orderByDesc('created_at')
-            ->paginate(10);
+            ->get();
 
         return view('rfid.index', compact('rfid'));
     }
@@ -119,7 +119,6 @@ class RfidController extends Controller
 
     public function destroy(Rfid $rfid)
     {
-        // Nonaktifkan kartu, jangan langsung menghapus riwayatnya.
         $rfid->update(['aktif' => false]);
 
         return redirect()

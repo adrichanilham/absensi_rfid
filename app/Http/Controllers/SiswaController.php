@@ -21,7 +21,7 @@ class SiswaController extends Controller
     
         $siswa = $query
             ->orderBy('nama_lengkap')
-            ->paginate(10);
+            ->get();
     
         return view('siswa.index', compact('siswa'));
     }
@@ -112,7 +112,6 @@ class SiswaController extends Controller
 
     public function destroy(Siswa $siswa)
     {
-        // Tidak menghapus permanen agar riwayat absensi tetap aman.
         $siswa->update(['status' => 'tidak_aktif']);
 
         return redirect()

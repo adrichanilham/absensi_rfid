@@ -16,7 +16,7 @@ class UserController extends Controller
         $users = User::query()
             ->with(['anak', 'kelasDiampu'])
             ->orderBy('username')
-            ->paginate(10);
+            ->get();
 
         return view('operator.users.index', compact('users'));
     }
